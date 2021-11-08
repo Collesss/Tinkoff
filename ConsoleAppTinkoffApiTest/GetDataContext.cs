@@ -15,7 +15,7 @@ namespace ConsoleAppTinkoffApiTest
         private readonly TimeSpan _maxRequestTime;
         private readonly int _maxRequestCount;
 
-        private DateTime _dateTimeLastSendRequest;
+        private DateTime _dateTimeFirstSendRequest;
         private int _requestCount;
 
         private object locker = new object();
