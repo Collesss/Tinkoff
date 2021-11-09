@@ -40,7 +40,10 @@ namespace ConsoleAppTinkoffApiTest
 
             GetDataContext getDataContext = new GetDataContext(context, 240, TimeSpan.FromMinutes(1));
 
-            var candles = getDataContext.GetData("BBG000T88BN2", CandleInterval.Hour, DateTime.Now - TimeSpan.FromDays(days), DateTime.Now);
+            var candles = getDataContext.GetData("BBG000T88BN2", CandleInterval.Hour, DateTime.Now - TimeSpan.FromDays(days), DateTime.Now)
+                .GroupBy(el => GetGroup(el.Time))
+                .Select(group => Data.AgregateCandle(group))
+                .OrderBy(aggCandle => aggCandle.OpenTime);
 
             /*
             var candles = new TinkoffCuterRequest(CandleInterval.Hour, DateTime.Now - TimeSpan.FromDays(days), DateTime.Now)
@@ -54,7 +57,7 @@ namespace ConsoleAppTinkoffApiTest
             */
             foreach (var candle in candles)
             {
-                Console.WriteLine($"{candle.Time}; {candle.Open}; {candle.Close}; {candle.Low}; {candle.High}; {candle.Volume}");
+                Console.WriteLine($"{candle.OpenTime}; {candle.CloseTime}; {candle.Open}; {candle.Close}; {candle.Low}; {candle.High}; {candle.Volume}");
             }
             
         }

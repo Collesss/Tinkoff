@@ -7,8 +7,6 @@ import TinkoffCuterRequest as tcr
 
 tinkoff : tcr.TinkoffCuterRequest = tcr.TinkoffCuterRequest(datetime.datetime.now() - datetime.timedelta(100), datetime.datetime.now(), tinvest.CandleResolution.hour)
 
-
-
 print(tinkoff.fromTime);
 print(tinkoff.toTime);
 print(tinkoff.candleTime);
@@ -20,4 +18,4 @@ print(dir(client))
 
 figi = client.get_market_stocks()
 for i in figi:
-    print (i)
+    printf (i)

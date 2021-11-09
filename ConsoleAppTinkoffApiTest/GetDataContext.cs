@@ -22,6 +22,7 @@ namespace ConsoleAppTinkoffApiTest
 
         public GetDataContext(Context context, int maxRequestCount, TimeSpan maxRequestTime)
         {
+            _dateTimeFirstSendRequest = DateTime.MinValue;
             _context = context;
             _maxRequestTime = maxRequestTime;
             _maxRequestCount = maxRequestCount;
@@ -35,18 +36,20 @@ namespace ConsoleAppTinkoffApiTest
             {
                 lock (locker)
                 {
+                    if (DateTime.Now - _dateTimeFirstSendRequest >= _maxRequestTime)
+                    {
+                        _dateTimeFirstSendRequest = DateTime.Now;
+                        _requestCount = 0;
+                    }
+
                     if (_requestCount == _maxRequestCount)
                     {
                         _requestCount = 0;
-
-                        TimeSpan diffWaitTime = DateTime.Now - _dateTimeLastSendRequest;
-
-                        if (_maxRequestTime > diffWaitTime)
-                            Task.Delay((_maxRequestTime - diffWaitTime).Add(TimeSpan.FromMilliseconds(50))).Wait();
+                        
+                        Task.Delay((_maxRequestTime - (DateTime.Now - _dateTimeFirstSendRequest)).Add(TimeSpan.FromMilliseconds(50))).Wait();
                     }
 
                     _requestCount++;
-                    _dateTimeLastSendRequest = DateTime.Now;
                 }
 
                 return await _context.MarketCandlesAsync(figi, dateFromTo.from, dateFromTo.to, CandleInterval.Hour);
