@@ -27,7 +27,7 @@ namespace ConsoleAppTinkoffApiTest
 
             //TinkoffCuterRequest
 
-            int days = 2000;
+            int days = 100;
 
             Console.WriteLine(new TinkoffCuterRequest(CandleInterval.Hour, DateTime.Now - TimeSpan.FromDays(days), DateTime.Now).CountRequest);
 
@@ -40,7 +40,7 @@ namespace ConsoleAppTinkoffApiTest
 
             GetDataContext getDataContext = new GetDataContext(context, 240, TimeSpan.FromMinutes(1));
 
-            var candles = getDataContext.GetData("BBG000T88BN2", CandleInterval.Hour, DateTime.Now - TimeSpan.FromDays(days), DateTime.Now)
+            var candles = getDataContext.GetData("BBG004S683W7", CandleInterval.Hour, DateTime.Now - TimeSpan.FromDays(days), DateTime.Now)
                 .GroupBy(el => GetGroup(el.Time))
                 .Select(group => Data.AgregateCandle(group))
                 .OrderBy(aggCandle => aggCandle.OpenTime);
@@ -70,7 +70,7 @@ namespace ConsoleAppTinkoffApiTest
                     (TimeSpan.FromHours(11), 1),
                     (TimeSpan.FromHours(15), 2),
                     (TimeSpan.FromHours(19), 3),
-                    (TimeSpan.FromHours(23), 4)
+                    (TimeSpan.FromHours(24), 4)
                 },
                 (value, rangeValue) => value.Hour < rangeValue.TotalHours);
 

@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any, Dict, Union
 
-__all__ = 'AnyDict'
+__all__ = ('AnyDict',)
 
 AnyDict = Dict[str, Any]  # pragma: no mutate
 
