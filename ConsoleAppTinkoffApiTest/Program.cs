@@ -3,6 +3,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Tinkoff.Trading.OpenApi.Models;
 using Tinkoff.Trading.OpenApi.Network;
+using OfficeOpenXml;
+using System.IO;
 
 namespace ConsoleAppTinkoffApiTest
 {
@@ -28,7 +30,7 @@ namespace ConsoleAppTinkoffApiTest
             //TinkoffCuterRequest
 
             int days = 100;
-
+            /*
             Console.WriteLine(new TinkoffCuterRequest(CandleInterval.Hour, DateTime.Now - TimeSpan.FromDays(days), DateTime.Now).CountRequest);
 
             foreach (var FromTo in new TinkoffCuterRequest(CandleInterval.Hour, DateTime.Now - TimeSpan.FromDays(days), DateTime.Now))
@@ -37,10 +39,10 @@ namespace ConsoleAppTinkoffApiTest
             }
 
             Console.WriteLine();
-
+            */
             GetDataContext getDataContext = new GetDataContext(context, 240, TimeSpan.FromMinutes(1));
 
-            var candles = getDataContext.GetData("BBG004S683W7", CandleInterval.Hour, DateTime.Now - TimeSpan.FromDays(days), DateTime.Now)
+            var candles = (await getDataContext.GetData("BBG004S683W7", CandleInterval.Hour, DateTime.Now - TimeSpan.FromDays(days), DateTime.Now))
                 .GroupBy(el => GetGroup(el.Time))
                 .Select(group => Data.AgregateCandle(group))
                 .OrderBy(aggCandle => aggCandle.OpenTime);
@@ -55,11 +57,44 @@ namespace ConsoleAppTinkoffApiTest
                 .OrderBy(DataCandle => DataCandle.OpenTime);
             
             */
-            foreach (var candle in candles)
+
+
+            int i = 2;
+
+            if (File.Exists("info.xlsx"))
+                File.Delete("info.xlsx");
+
+            using (ExcelPackage excelPackage = new ExcelPackage(new FileInfo("info.xlsx")))
             {
-                Console.WriteLine($"{candle.OpenTime}; {candle.CloseTime}; {candle.Open}; {candle.Close}; {candle.Low}; {candle.High}; {candle.Volume}");
+                ExcelWorksheet worksheet = excelPackage.Workbook.Worksheets.Add("Sheet 1");
+
+                worksheet.Cells["A:B"].Style.Numberformat.Format = "dd.MM.yyyy HH:mm";
+
+                worksheet.Cells[1, 1].Value = "Open Time";
+                worksheet.Cells[1, 2].Value = "Close Time";
+                worksheet.Cells[1, 3].Value = "Open";
+                worksheet.Cells[1, 4].Value = "Close";
+                worksheet.Cells[1, 5].Value = "Low";
+                worksheet.Cells[1, 6].Value = "High";
+
+                foreach (var candle in candles)
+                {
+                    Console.WriteLine($"{candle.OpenTime}; {candle.CloseTime}; {candle.Open}; {candle.Close}; {candle.Low}; {candle.High}; {candle.Volume}");
+
+                    worksheet.Cells[i, 1].Value = candle.OpenTime;//.ToString("dd.MM.yyyy H:mm");
+                    worksheet.Cells[i, 2].Value = candle.CloseTime;
+                    worksheet.Cells[i, 3].Value = candle.Open;
+                    worksheet.Cells[i, 4].Value = candle.Close;
+                    worksheet.Cells[i, 5].Value = candle.Low;
+                    worksheet.Cells[i, 6].Value = candle.High;
+
+                    i++;
+                }
+
+                worksheet.Cells["A:B"].AutoFitColumns();
+
+                excelPackage.Save();
             }
-            
         }
 
         static string GetGroup(DateTime dateTime)

@@ -28,11 +28,11 @@ namespace ConsoleAppTinkoffApiTest
             _maxRequestCount = maxRequestCount;
         }
 
-        public IEnumerable<CandlePayload> GetData(string figi, CandleInterval candleInterval, DateTime from, DateTime to)
+        public async Task<IEnumerable<CandlePayload>> GetData(string figi, CandleInterval candleInterval, DateTime from, DateTime to)
         {
             TinkoffCuterRequest tcr = new TinkoffCuterRequest(candleInterval, from, to);
             
-            return tcr.Select(async dateFromTo =>
+            return (await Task.WhenAll(tcr.Select(async dateFromTo =>
             {
                 lock (locker)
                 {
@@ -53,9 +53,9 @@ namespace ConsoleAppTinkoffApiTest
                 }
 
                 return await _context.MarketCandlesAsync(figi, dateFromTo.from, dateFromTo.to, CandleInterval.Hour);
-            }).SelectMany(candles => candles.Result.Candles)
-            .OrderBy(candle => candle.Time)
-            .ToArray();
+            }).ToArray()))
+            .SelectMany(candles => candles.Candles)
+            .OrderBy(candle => candle.Time);
         }
     }
 }
