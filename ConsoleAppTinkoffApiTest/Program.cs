@@ -14,10 +14,30 @@ namespace ConsoleAppTinkoffApiTest
         {
             Test().Wait();
 
+            //Test2().Wait();
+
             Console.Write("press any key...");
             Console.ReadKey();
         }
 
+
+        public async static Task Test2()
+        {
+            // токен аутентификации
+            var token = "t.F-e_MvGHyM5RydIcD28rwvIuOpgfChfOokIlqKWYOm9JKUeJFLQwlZMP0O6p_hneiDWOAjT90UQzJSlEvBZSog";
+            // для работы в песочнице используйте GetSandboxConnection
+            var connection = ConnectionFactory.GetConnection(token);
+            var context = connection.Context;
+
+            var list = await context.MarketStocksAsync();
+
+            foreach (var item in list.Instruments)
+            {
+                Console.WriteLine($"{item.Name}: {item.Figi}: {item.Ticker};");
+            }
+
+            Console.WriteLine(list.Total);
+        }
 
         public async static Task Test()
         {
@@ -59,42 +79,15 @@ namespace ConsoleAppTinkoffApiTest
             */
 
 
-            int i = 2;
 
-            if (File.Exists("info.xlsx"))
-                File.Delete("info.xlsx");
-
-            using (ExcelPackage excelPackage = new ExcelPackage(new FileInfo("info.xlsx")))
+            SaveInXml.Save("info.xlsx", "Sheet 1", candles, new (Func<Data, object> element, string header, string format)[]
             {
-                ExcelWorksheet worksheet = excelPackage.Workbook.Worksheets.Add("Sheet 1");
-
-                worksheet.Cells["A:B"].Style.Numberformat.Format = "dd.MM.yyyy HH:mm";
-
-                worksheet.Cells[1, 1].Value = "Open Time";
-                worksheet.Cells[1, 2].Value = "Close Time";
-                worksheet.Cells[1, 3].Value = "Open";
-                worksheet.Cells[1, 4].Value = "Close";
-                worksheet.Cells[1, 5].Value = "Low";
-                worksheet.Cells[1, 6].Value = "High";
-
-                foreach (var candle in candles)
-                {
-                    Console.WriteLine($"{candle.OpenTime}; {candle.CloseTime}; {candle.Open}; {candle.Close}; {candle.Low}; {candle.High}; {candle.Volume}");
-
-                    worksheet.Cells[i, 1].Value = candle.OpenTime;//.ToString("dd.MM.yyyy H:mm");
-                    worksheet.Cells[i, 2].Value = candle.CloseTime;
-                    worksheet.Cells[i, 3].Value = candle.Open;
-                    worksheet.Cells[i, 4].Value = candle.Close;
-                    worksheet.Cells[i, 5].Value = candle.Low;
-                    worksheet.Cells[i, 6].Value = candle.High;
-
-                    i++;
-                }
-
-                worksheet.Cells["A:B"].AutoFitColumns();
-
-                excelPackage.Save();
-            }
+                (d => d.CloseTime, "CloseTime", "dd.MM.yyyy HH:mm"),
+                (d => d.Open, "CloseTime", null),
+                (d => d.Close, "CloseTime", null),
+                (d => d.Low, "CloseTime", null),
+                (d => d.High, "CloseTime", null)
+            });
         }
 
         static string GetGroup(DateTime dateTime)
