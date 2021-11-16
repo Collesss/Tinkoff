@@ -20,7 +20,6 @@ namespace ConsoleAppTinkoffApiTest
                 ExcelWorksheet worksheet = excelPackage.Workbook.Worksheets.Add("Sheet 1");
 
                 worksheet.Cells["A:B"].Style.Numberformat.Format = "dd.MM.yyyy HH:mm";
-                worksheet.Cells["A:B"].Style.Numberformat.NumFmtID
 
                 int d = 1;
 

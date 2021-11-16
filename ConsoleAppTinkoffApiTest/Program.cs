@@ -61,11 +61,32 @@ namespace ConsoleAppTinkoffApiTest
             Console.WriteLine();
             */
             GetDataContext getDataContext = new GetDataContext(context, 240, TimeSpan.FromMinutes(1));
+            var list = await context.MarketStocksAsync();
 
-            var candles = (await getDataContext.GetData("BBG004S683W7", CandleInterval.Hour, DateTime.Now - TimeSpan.FromDays(days), DateTime.Now))
+            await Task.Delay(TimeSpan.FromMinutes(1));
+
+            int i = 1;
+
+            foreach (var item in list.Instruments)
+            {
+                Console.WriteLine($"{item.Figi}; {i}/{list.Total}");
+
+                var candles = (await getDataContext.GetData(item.Figi, CandleInterval.Hour, DateTime.Now - TimeSpan.FromDays(days), DateTime.Now))
                 .GroupBy(el => GetGroup(el.Time))
                 .Select(group => Data.AgregateCandle(group))
                 .OrderBy(aggCandle => aggCandle.OpenTime);
+
+                SaveInXml.Save("{item.Figi}.xlsx", "Data", candles, new (Func<Data, object> element, string header, string format)[]
+                {
+                    (d => d.CloseTime, "CloseTime", "dd.MM.yyyy HH:mm"),
+                    (d => d.Open, "Open", null),
+                    (d => d.Close, "Cloes", null),
+                    (d => d.Low, "Low", null),
+                    (d => d.High, "High", null)
+                });
+
+                i++;
+            }
 
             /*
             var candles = new TinkoffCuterRequest(CandleInterval.Hour, DateTime.Now - TimeSpan.FromDays(days), DateTime.Now)
@@ -77,17 +98,6 @@ namespace ConsoleAppTinkoffApiTest
                 .OrderBy(DataCandle => DataCandle.OpenTime);
             
             */
-
-
-
-            SaveInXml.Save("info.xlsx", "Sheet 1", candles, new (Func<Data, object> element, string header, string format)[]
-            {
-                (d => d.CloseTime, "CloseTime", "dd.MM.yyyy HH:mm"),
-                (d => d.Open, "CloseTime", null),
-                (d => d.Close, "CloseTime", null),
-                (d => d.Low, "CloseTime", null),
-                (d => d.High, "CloseTime", null)
-            });
         }
 
         static string GetGroup(DateTime dateTime)
