@@ -17,13 +17,14 @@ namespace ConsoleAppTinkoffApiTest
         private readonly int _maxRequestCount;
 
         private DateTime _dateTimeFirstSendRequest;
+        private DateTime _dateTimeLastSendRequest;
         private int _requestCount;
 
         private object locker = new object();
 
         public GetDataContext(Context context, int maxRequestCount, TimeSpan maxRequestTime)
         {
-            _dateTimeFirstSendRequest = DateTime.MinValue;
+            _dateTimeLastSendRequest = _dateTimeFirstSendRequest = DateTime.MinValue;
             _context = context;
             _maxRequestTime = maxRequestTime;
             _maxRequestCount = maxRequestCount;
@@ -47,17 +48,19 @@ namespace ConsoleAppTinkoffApiTest
                     {
                         _requestCount = 0;
                         
-                        Task.Delay((_maxRequestTime - (DateTime.Now - _dateTimeFirstSendRequest)).Add(TimeSpan.FromMilliseconds(250))).Wait();
+                        Task.Delay((_maxRequestTime - (DateTime.Now - _dateTimeLastSendRequest)).Add(TimeSpan.FromMilliseconds(250))).Wait();
                     }
 
                     _requestCount++;
+
+                    _dateTimeLastSendRequest = DateTime.Now;
+
+                    using (StreamWriter streamWriter = new StreamWriter(new FileStream("log.txt", FileMode.Append, FileAccess.Write)))
+                    {
+                        streamWriter.WriteLine(DateTime.Now);
+                    }
                 }
                 
-                using (StreamWriter streamWriter = new StreamWriter(new FileStream("log.txt", FileMode.Append, FileAccess.Write)))
-                {
-                    streamWriter.WriteLine(DateTime.Now);
-                }
-
                 return await _context.MarketCandlesAsync(figi, dateFromTo.from, dateFromTo.to, CandleInterval.Hour); 
             }).ToArray()))
             .SelectMany(candles => candles.Candles)
