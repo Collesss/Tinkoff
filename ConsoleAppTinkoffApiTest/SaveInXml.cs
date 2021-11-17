@@ -61,6 +61,11 @@ namespace ConsoleAppTinkoffApiTest
 
         public static void Save<T>(string fileName, string sheetName, IEnumerable<T> elements, IEnumerable<(Func<T, object> element, string header, string format)> columns)
         {
+            if (!Directory.Exists("Data"))
+                Directory.CreateDirectory("Data");
+
+            fileName = $@"Data\{fileName}";
+
             if (File.Exists(fileName))
                 File.Delete(fileName);
 
