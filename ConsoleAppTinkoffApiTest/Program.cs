@@ -5,6 +5,7 @@ using Tinkoff.Trading.OpenApi.Models;
 using Tinkoff.Trading.OpenApi.Network;
 using OfficeOpenXml;
 using System.IO;
+using ConsoleAppTinkoffApiTest.Test;
 
 namespace ConsoleAppTinkoffApiTest
 {
@@ -12,9 +13,9 @@ namespace ConsoleAppTinkoffApiTest
     {
         static void Main(string[] args)
         {
-            Test().Wait();
+            //Test().Wait();
 
-            //Test2().Wait();
+            Test2().Wait();
 
             Console.Write("press any key...");
             Console.ReadKey();
@@ -63,7 +64,7 @@ namespace ConsoleAppTinkoffApiTest
             GetDataContext getDataContext = new GetDataContext(context, 240, TimeSpan.FromMinutes(1));
             var list = await context.MarketStocksAsync();
 
-            await Task.Delay(TimeSpan.FromMinutes(1));
+            await Task.Delay(TimeSpan.FromSeconds(65));
 
             int i = 1;
 

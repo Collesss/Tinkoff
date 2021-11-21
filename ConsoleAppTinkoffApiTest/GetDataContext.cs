@@ -48,7 +48,7 @@ namespace ConsoleAppTinkoffApiTest
                     {
                         _requestCount = 0;
                         
-                        Task.Delay((_maxRequestTime - (DateTime.Now - _dateTimeLastSendRequest)).Add(TimeSpan.FromMilliseconds(250))).Wait();
+                        Task.Delay((_maxRequestTime - (DateTime.Now - _dateTimeLastSendRequest)).Add(TimeSpan.FromSeconds(15))).Wait();
                     }
 
                     _requestCount++;
