@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\MyLogger\MyLogger.csproj" />
     <ProjectReference Include="..\TinkoffMyConnectionFactory\TinkoffMyConnectionFactory.csproj" />
   </ItemGroup>
 

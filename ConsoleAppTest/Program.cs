@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MyLogger;
+using System;
 using System.Threading.Tasks;
 using Tinkoff.Trading.OpenApi.Models;
 using TinkoffMyConnectionFactory;
@@ -20,7 +21,7 @@ namespace ConsoleAppTest
             // токен аутентификации
             var token = "t.F-e_MvGHyM5RydIcD28rwvIuOpgfChfOokIlqKWYOm9JKUeJFLQwlZMP0O6p_hneiDWOAjT90UQzJSlEvBZSog";
             // для работы в песочнице используйте GetSandboxConnection
-            var connection = MyConnectionFactory.GetConnection(token, );
+            var connection = MyConnectionFactory.GetConnection(token, new MyLogger<MyContext>("log.txt"));
             var context = connection.Context;
 
             var list = await context.MarketStocksAsync();

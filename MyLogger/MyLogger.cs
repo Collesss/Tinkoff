@@ -30,7 +30,14 @@ namespace MyLogger
         {
             using (StreamWriter writer = new StreamWriter(new FileStream(_logfile, FileMode.Append, FileAccess.Write)))
             {
-                
+                try
+                {
+                    writer.WriteLine($"{logLevel}|{state}|{exception?.Message}|{formatter(state, exception)}");
+                }
+                catch(Exception e)
+                {
+                    writer.WriteLine($"da pizda: {e.Message}");
+                }
             }
         }
     }

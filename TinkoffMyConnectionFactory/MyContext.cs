@@ -72,11 +72,9 @@ namespace TinkoffMyConnectionFactory
                 {
                     _dataForWait[groupRequest].RequestCount = 0;
 
-
-
                     TimeSpan waitTime = (_settingForRequest[groupRequest].MaxRequestTime - (DateTime.Now - _dataForWait[groupRequest].DateTimeLastSendRequest)).Add(TimeSpan.FromSeconds(15));
 
-                    _logger.LogInformation($"start wait: {waitTime:HH:mm:ss}");
+                    _logger.LogInformation($"start wait: {waitTime}");
                     
                     Task.Delay(waitTime).Wait();
                 }
@@ -96,13 +94,13 @@ namespace TinkoffMyConnectionFactory
 
             try
             {
-                _logger.LogInformation($"send request Market Stoks: {DateTime.Now}");
+                _logger.LogInformation($"{_dataForWait["market"].RequestCount}: send request Market Stoks: {DateTime.Now}");
                 result = await base.MarketStocksAsync();
-                _logger.LogInformation($"get data request Market Stoks: {DateTime.Now}");
+                _logger.LogInformation($"{_dataForWait["market"].RequestCount}: get data request Market Stoks: {DateTime.Now}");
             }
             catch (Exception e)
             {
-                _logger.LogCritical(e, "fock");
+                _logger.LogCritical(e, $"fock: {e.Message}");
 
                 throw;
             }
@@ -125,13 +123,13 @@ namespace TinkoffMyConnectionFactory
 
                 try
                 {
-                    _logger.LogInformation($"send request Market Candles {figi}: {DateTime.Now}");
+                    _logger.LogInformation($"{_dataForWait["market"].RequestCount}: send request Market Candles {figi}: {DateTime.Now}");
                     result = await base.MarketCandlesAsync(figi, FromToDateTime.from, FromToDateTime.to, interval);
-                    _logger.LogInformation($"get data request Market Candles {figi}: {DateTime.Now}");
+                    _logger.LogInformation($"{_dataForWait["market"].RequestCount}: get data request Market Candles {figi}: {DateTime.Now}");
                 }
                 catch (Exception e)
                 {
-                    _logger.LogCritical(e, "very fock");
+                    _logger.LogCritical(e, $"{_dataForWait["market"].RequestCount}: very fock: {e.Message}");
 
                     throw;
                 }
