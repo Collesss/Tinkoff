@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,6 +20,7 @@ namespace TinkoffMyConnectionFactory
         private class DataForWait
         {
             public DateTime DateTimeFirstSendRequest { get; set; }
+            public DateTime DateTimeLastSendRequest { get; set; }
             public int RequestCount { get; set; }
         }
 
@@ -38,11 +40,15 @@ namespace TinkoffMyConnectionFactory
 
         private static object loker = new object();
 
-        public MyContext(IConnection<Context> connection) : base(connection) 
+        private ILogger<MyContext> _logger;
+
+        public MyContext(IConnection<Context> connection, ILogger<MyContext> logger) : base(connection) 
         {
+            _logger = logger;
+
             _dataForWait = new Dictionary<string, DataForWait>
                 (_settingForRequest.Keys.Select(key => new KeyValuePair<string, DataForWait>
-                (key, new DataForWait { DateTimeFirstSendRequest = DateTime.MinValue, RequestCount = 0 })));
+                (key, new DataForWait { DateTimeFirstSendRequest = DateTime.MinValue, DateTimeLastSendRequest = DateTime.MinValue, RequestCount = 0 })));
 
             /*
             lock (loker)
@@ -52,29 +58,56 @@ namespace TinkoffMyConnectionFactory
             */
         }
 
-
-        public new async Task<MarketInstrumentList> MarketStocksAsync()
+        private void UpdateDataWait(string groupRequest)
         {
             lock (loker)
             {
-                if (DateTime.Now - _dataForWait["market"].DateTimeFirstSendRequest >= _settingForRequest["market"].MaxRequestTime)
+                if (DateTime.Now - _dataForWait[groupRequest].DateTimeFirstSendRequest >= _settingForRequest[groupRequest].MaxRequestTime)
                 {
-                    _dataForWait["market"].DateTimeFirstSendRequest = DateTime.Now;
-                    _dataForWait["market"].RequestCount = 0;
+                    _dataForWait[groupRequest].DateTimeFirstSendRequest = DateTime.Now;
+                    _dataForWait[groupRequest].RequestCount = 0;
                 }
 
-                if (_dataForWait["market"].RequestCount == _settingForRequest["market"].MaxRequestCount)
+                if (_dataForWait[groupRequest].RequestCount == _settingForRequest[groupRequest].MaxRequestCount)
                 {
-                    _dataForWait["market"].RequestCount = 0;
+                    _dataForWait[groupRequest].RequestCount = 0;
 
-                    Task.Delay((_settingForRequest["market"].MaxRequestTime - (DateTime.Now - _dataForWait["market"].DateTimeFirstSendRequest)).Add(TimeSpan.FromSeconds(15))).Wait();
+
+
+                    TimeSpan waitTime = (_settingForRequest[groupRequest].MaxRequestTime - (DateTime.Now - _dataForWait[groupRequest].DateTimeLastSendRequest)).Add(TimeSpan.FromSeconds(15));
+
+                    _logger.LogInformation($"start wait: {waitTime:HH:mm:ss}");
+                    
+                    Task.Delay(waitTime).Wait();
                 }
 
-                _dataForWait["market"].RequestCount++;
+                _dataForWait[groupRequest].RequestCount++;
+
+                _dataForWait[groupRequest].DateTimeLastSendRequest = DateTime.Now;
 
             }
+        }
 
-            return await base.MarketStocksAsync();
+        public new async Task<MarketInstrumentList> MarketStocksAsync()
+        {
+            UpdateDataWait("market");
+
+            MarketInstrumentList result;
+
+            try
+            {
+                _logger.LogInformation($"send request Market Stoks: {DateTime.Now}");
+                result = await base.MarketStocksAsync();
+                _logger.LogInformation($"get data request Market Stoks: {DateTime.Now}");
+            }
+            catch (Exception e)
+            {
+                _logger.LogCritical(e, "fock");
+
+                throw;
+            }
+
+            return result;
         }
 
 
@@ -86,26 +119,24 @@ namespace TinkoffMyConnectionFactory
 
             foreach (var FromToDateTime in tcr)
             {
-                lock (loker)
+                UpdateDataWait("market");
+
+                CandleList result;
+
+                try
                 {
-                    if (DateTime.Now - _dataForWait["market"].DateTimeFirstSendRequest >= _settingForRequest["market"].MaxRequestTime)
-                    {
-                        _dataForWait["market"].DateTimeFirstSendRequest = DateTime.Now;
-                        _dataForWait["market"].RequestCount = 0;
-                    }
+                    _logger.LogInformation($"send request Market Candles {figi}: {DateTime.Now}");
+                    result = await base.MarketCandlesAsync(figi, FromToDateTime.from, FromToDateTime.to, interval);
+                    _logger.LogInformation($"get data request Market Candles {figi}: {DateTime.Now}");
+                }
+                catch (Exception e)
+                {
+                    _logger.LogCritical(e, "very fock");
 
-                    if (_dataForWait["market"].RequestCount == _settingForRequest["market"].MaxRequestCount)
-                    {
-                        _dataForWait["market"].RequestCount = 0;
-
-                        Task.Delay((_settingForRequest["market"].MaxRequestTime - (DateTime.Now - _dataForWait["market"].DateTimeFirstSendRequest)).Add(TimeSpan.FromSeconds(15))).Wait();
-                    }
-
-                    _dataForWait["market"].RequestCount++;
-
+                    throw;
                 }
 
-                candleLists.Add(await base.MarketCandlesAsync(figi, FromToDateTime.from, FromToDateTime.to, interval));
+                candleLists.Add(result);
             }
 
             return new CandleList(figi, interval, candleLists.SelectMany(el => el.Candles).ToList());
