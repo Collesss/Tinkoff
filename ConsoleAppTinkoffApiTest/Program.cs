@@ -77,7 +77,7 @@ namespace ConsoleAppTinkoffApiTest
                 .Select(group => Data.AgregateCandle(group))
                 .OrderBy(aggCandle => aggCandle.OpenTime);
 
-                SaveInXml.Save($"{item.Figi}.xlsx", "Data", candles, new (Func<Data, object> element, string header, string format)[]
+                await SaveInXml.Save($"{item.Figi}.xlsx", "Data", candles, new (Func<Data, object> element, string header, string format)[]
                 {
                     (d => d.CloseTime, "CloseTime", "dd.MM.yyyy HH:mm"),
                     (d => d.Open, "Open", null),

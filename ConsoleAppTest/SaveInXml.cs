@@ -6,11 +6,11 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ConsoleAppTinkoffApiTest
+namespace ConsoleAppTest
 {
     public class SaveInXml
     {
-
+        /*
         public static void Save(string fileName, IEnumerable<IEnumerable<object>> elements, IEnumerable<string> columnsHeaders, IEnumerable<string> formats)
         {
             if (File.Exists(fileName))
@@ -59,50 +59,54 @@ namespace ConsoleAppTinkoffApiTest
                 excelPackage.Save();
             }
         }
+        */
 
-        public static void Save<T>(string fileName, string sheetName, IEnumerable<T> elements, IEnumerable<(Func<T, object> element, string header, string format)> columns)
+        public static async Task Save<T>(string fileName, string sheetName, IEnumerable<T> elements, IEnumerable<(Func<T, object> element, string header, string format)> columns)
         {
-            if (!Directory.Exists("Data"))
-                Directory.CreateDirectory("Data");
-
-            fileName = $@"Data\{fileName}";
-
-            if (File.Exists(fileName))
-                File.Delete(fileName);
-
-            using (ExcelPackage excelPackage = new ExcelPackage(new FileInfo(fileName)))
+            await Task.Run(() =>
             {
-                ExcelWorksheet worksheet = excelPackage.Workbook.Worksheets.Add("Sheet 1");
+                if (!Directory.Exists("Data"))
+                    Directory.CreateDirectory("Data");
 
-                int i = 1;
+                fileName = $@"Data\{fileName}";
 
-                foreach (var column in columns)
+                if (File.Exists(fileName))
+                    File.Delete(fileName);
+
+                using (ExcelPackage excelPackage = new ExcelPackage(new FileInfo(fileName)))
                 {
-                    worksheet.Cells[1, i].Value = column.header;
-                    worksheet.Column(i).Style.Numberformat.Format = column.format;
+                    ExcelWorksheet worksheet = excelPackage.Workbook.Worksheets.Add("Sheet 1");
 
-                    i++;
-                }
-
-                i = 2;
-
-                foreach (var element in elements)
-                {
-                    int j = 1;
+                    int i = 1;
 
                     foreach (var column in columns)
                     {
-                        worksheet.Cells[i, j].Value = column.element(element);
-                        j++;
+                        worksheet.Cells[1, i].Value = column.header;
+                        worksheet.Column(i).Style.Numberformat.Format = column.format;
+
+                        i++;
                     }
 
-                    i++;
+                    i = 2;
+
+                    foreach (var element in elements)
+                    {
+                        int j = 1;
+
+                        foreach (var column in columns)
+                        {
+                            worksheet.Cells[i, j].Value = column.element(element);
+                            j++;
+                        }
+
+                        i++;
+                    }
+
+                    worksheet.Cells.AutoFitColumns();
+
+                    excelPackage.Save();
                 }
-
-                worksheet.Cells.AutoFitColumns();
-
-                excelPackage.Save();
-            }
+            });
         }
     }
 }

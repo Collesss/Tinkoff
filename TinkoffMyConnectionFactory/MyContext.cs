@@ -11,6 +11,7 @@ namespace TinkoffMyConnectionFactory
 {
     public class MyContext : Context, IContext
     {
+        /*
         private class DataSettingForRequest
         {
             public TimeSpan MaxRequestTime { get; set; }
@@ -24,12 +25,6 @@ namespace TinkoffMyConnectionFactory
             public int RequestCount { get; set; }
         }
 
-        /*
-        private static readonly Dictionary<string, (int clientCount, Dictionary<string, (DateTime dateTimeFirstSendRequest, int requestCount)> dataForRestrict)> waitData = 
-            new Dictionary<string, (int clientCount, Dictionary<string, (DateTime dateTimeFirstSendRequest, int requestCount)> dataForRestrict)>();
-        
-        */
-
         private static readonly Dictionary<string, DataSettingForRequest> _settingForRequest = 
             new Dictionary<string, DataSettingForRequest>()
         {
@@ -39,6 +34,7 @@ namespace TinkoffMyConnectionFactory
         private Dictionary<string, DataForWait> _dataForWait;
 
         private static object loker = new object();
+        */
 
         private ILogger<MyContext> _logger;
 
@@ -46,18 +42,14 @@ namespace TinkoffMyConnectionFactory
         {
             _logger = logger;
 
+            /*
             _dataForWait = new Dictionary<string, DataForWait>
                 (_settingForRequest.Keys.Select(key => new KeyValuePair<string, DataForWait>
                 (key, new DataForWait { DateTimeFirstSendRequest = DateTime.MinValue, DateTimeLastSendRequest = DateTime.MinValue, RequestCount = 0 })));
-
-            /*
-            lock (loker)
-            {
-                if()
-            }
             */
         }
 
+        /*
         private void UpdateDataWait(string groupRequest)
         {
             lock (loker)
@@ -87,25 +79,34 @@ namespace TinkoffMyConnectionFactory
 
             }
         }
-
+        */
         public new async Task<MarketInstrumentList> MarketStocksAsync()
         {
-            UpdateDataWait("market");
+            //UpdateDataWait("market");
 
-            MarketInstrumentList result;
+            MarketInstrumentList result = null;
 
-            try
+            do
             {
-                _logger.LogInformation($"{_dataForWait["market"].RequestCount}: send request Market Stoks: {DateTime.Now}");
-                result = await base.MarketStocksAsync();
-                _logger.LogInformation($"{_dataForWait["market"].RequestCount}: get data request Market Stoks: {DateTime.Now}");
-            }
-            catch (Exception e)
-            {
-                _logger.LogCritical(e, $"fock: {e.Message}");
+                try
+                {
+                    _logger.LogInformation($"send request Market Stoks: {DateTime.Now}");
+                    result = await base.MarketStocksAsync();
+                    _logger.LogInformation($"get data request Market Stoks: {DateTime.Now}");
+                }
+                catch (OpenApiException e)
+                {
+                    _logger.LogError(e, $"not very fock: {e.Message}");
+                    await Task.Delay(TimeSpan.FromMinutes(1));
+                }
+                catch (Exception e)
+                {
+                    _logger.LogCritical(e, $"fock: {e.Message}");
 
-                throw;
+                    throw;
+                }
             }
+            while (result == null);
 
             return result;
         }
@@ -119,30 +120,29 @@ namespace TinkoffMyConnectionFactory
 
             foreach (var FromToDateTime in tcr)
             {
-                UpdateDataWait("market");
+                //UpdateDataWait("market");
 
                 CandleList result = null;
 
                 do
                 {
-
                     try
                     {
-                        _logger.LogInformation($"{_dataForWait["market"].RequestCount}: send request Market Candles {figi}: {DateTime.Now}");
+                        _logger.LogInformation($"send request Market Candles {figi}: {DateTime.Now}");
                         result = await base.MarketCandlesAsync(figi, FromToDateTime.from, FromToDateTime.to, interval);
-                        _logger.LogInformation($"{_dataForWait["market"].RequestCount}: get data request Market Candles {figi}: {DateTime.Now}");
+                        _logger.LogInformation($"get data request Market Candles {figi}: {DateTime.Now}");
                     }
                     catch (OpenApiException e)
                     {
-
+                        _logger.LogError(e, $"not very fock: {e.Message}");
+                        await Task.Delay(TimeSpan.FromMinutes(1));
                     }
                     catch (Exception e)
                     {
-                        _logger.LogCritical(e, $"{_dataForWait["market"].RequestCount}: very fock: {e.Message}");
+                        _logger.LogCritical(e, $"very fock: {e.Message}");
 
                         throw;
                     }
-
                 }
                 while (result == null);
 

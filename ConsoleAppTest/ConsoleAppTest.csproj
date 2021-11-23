@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="EPPlus" Version="4.5.3.3" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\MyLogger\MyLogger.csproj" />
     <ProjectReference Include="..\TinkoffMyConnectionFactory\TinkoffMyConnectionFactory.csproj" />
   </ItemGroup>
