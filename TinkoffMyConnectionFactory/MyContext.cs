@@ -77,6 +77,8 @@ namespace TinkoffMyConnectionFactory
                     _logger.LogInformation($"start wait: {waitTime}");
                     
                     Task.Delay(waitTime).Wait();
+
+                    _dataForWait[groupRequest].DateTimeFirstSendRequest = DateTime.Now;
                 }
 
                 _dataForWait[groupRequest].RequestCount++;
@@ -119,20 +121,30 @@ namespace TinkoffMyConnectionFactory
             {
                 UpdateDataWait("market");
 
-                CandleList result;
+                CandleList result = null;
 
-                try
+                do
                 {
-                    _logger.LogInformation($"{_dataForWait["market"].RequestCount}: send request Market Candles {figi}: {DateTime.Now}");
-                    result = await base.MarketCandlesAsync(figi, FromToDateTime.from, FromToDateTime.to, interval);
-                    _logger.LogInformation($"{_dataForWait["market"].RequestCount}: get data request Market Candles {figi}: {DateTime.Now}");
-                }
-                catch (Exception e)
-                {
-                    _logger.LogCritical(e, $"{_dataForWait["market"].RequestCount}: very fock: {e.Message}");
 
-                    throw;
+                    try
+                    {
+                        _logger.LogInformation($"{_dataForWait["market"].RequestCount}: send request Market Candles {figi}: {DateTime.Now}");
+                        result = await base.MarketCandlesAsync(figi, FromToDateTime.from, FromToDateTime.to, interval);
+                        _logger.LogInformation($"{_dataForWait["market"].RequestCount}: get data request Market Candles {figi}: {DateTime.Now}");
+                    }
+                    catch (OpenApiException e)
+                    {
+
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogCritical(e, $"{_dataForWait["market"].RequestCount}: very fock: {e.Message}");
+
+                        throw;
+                    }
+
                 }
+                while (result == null);
 
                 candleLists.Add(result);
             }

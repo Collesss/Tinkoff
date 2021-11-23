@@ -40,9 +40,9 @@ namespace ConsoleAppTest
 
             foreach (var item in list.Instruments)
             {
-                Console.WriteLine($"{item.Figi}; {i}/{list.Total}");
-
                 var candles = await context.MarketCandlesAsync(item.Figi, DateTime.Now - TimeSpan.FromDays(days), DateTime.Now, CandleInterval.Hour);
+
+                Console.WriteLine($"{item.Figi}; {i}/{list.Total}");
 
                 i++;
             }
