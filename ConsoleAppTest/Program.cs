@@ -1,4 +1,5 @@
-﻿using MyLogger;
+﻿using Microsoft.Extensions.Configuration;
+using MyLogger;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,11 +17,12 @@ namespace ConsoleAppTest
             Console.Write("press any key...");
             Console.ReadKey();
         }
-
         public async static Task Test1()
         {
+            IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddJsonFile("config.json").Build();
+
             // токен аутентификации
-            var token = "t.F-e_MvGHyM5RydIcD28rwvIuOpgfChfOokIlqKWYOm9JKUeJFLQwlZMP0O6p_hneiDWOAjT90UQzJSlEvBZSog";
+            var token = configurationRoot["token"];
             // для работы в песочнице используйте GetSandboxConnection
             var connection = MyConnectionFactory.GetConnection(token, new MyLogger<MyContext>("log.txt"));
             var context = connection.Context;
@@ -41,12 +43,20 @@ namespace ConsoleAppTest
 
             foreach (var item in list.Instruments)
             {
+                if (Console.KeyAvailable)
+                {
+                    ConsoleKeyInfo consoleKeyInfo = Console.ReadKey();
+
+                    if (consoleKeyInfo.Key == ConsoleKey.C && (consoleKeyInfo.Modifiers & ConsoleModifiers.Control) == ConsoleModifiers.Control)
+                        break;
+                }
+
                 var candles = (await context.MarketCandlesAsync(item.Figi, DateTime.Now - TimeSpan.FromDays(days), DateTime.Now, CandleInterval.Hour)).Candles
                 .GroupBy(el => GetGroup(el.Time))
                 .Select(group => Data.AgregateCandle(group))
                 .OrderBy(aggCandle => aggCandle.OpenTime);
 
-                await SaveInXml.Save($"{item.Figi}.xlsx", "Data", candles, new (Func<Data, object> element, string header, string format)[]
+                await SaveInXml.Save($"{item.Name}.xlsx", "Data", candles, new (Func<Data, object> element, string header, string format)[]
                 {
                     (d => d.CloseTime, "CloseTime", "dd.MM.yyyy HH:mm"),
                     (d => d.Open, "Open", null),
@@ -55,8 +65,8 @@ namespace ConsoleAppTest
                     (d => d.High, "High", null)
                 });
 
-                Console.WriteLine($"{item.Figi}; {i}/{list.Total}");
-
+                Console.WriteLine($"Figi:{item.Figi} Name:{item.Name}; {i}/{list.Total}");
+                
                 i++;
             }
         }

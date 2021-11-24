@@ -32,7 +32,8 @@ namespace MyLogger
             {
                 try
                 {
-                    writer.WriteLine($"{logLevel}|{state}|{exception?.Message}|{formatter(state, exception)}");
+                    //|{state}|{exception?.Message}
+                    writer.WriteLine($"{logLevel}|{formatter(state, exception)}");
                 }
                 catch(Exception e)
                 {
