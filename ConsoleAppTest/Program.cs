@@ -2,6 +2,7 @@
 using MyLogger;
 using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Tinkoff.Trading.OpenApi.Models;
 using TinkoffMyConnectionFactory;
@@ -37,6 +38,8 @@ namespace ConsoleAppTest
             Console.WriteLine(list.Total);
             Console.WriteLine();
 
+            Regex regex = new Regex(@"[\\\/:*?""<>|]");
+
             int days = 100;
 
             int i = 1;
@@ -56,7 +59,7 @@ namespace ConsoleAppTest
                 .Select(group => Data.AgregateCandle(group))
                 .OrderBy(aggCandle => aggCandle.OpenTime);
 
-                await SaveInXml.Save($"{item.Name}.xlsx", "Data", candles, new (Func<Data, object> element, string header, string format)[]
+                await SaveInXml.Save($"{regex.Replace(item.Name, match => "_")}.xlsx", "Data", candles, new (Func<Data, object> element, string header, string format)[]
                 {
                     (d => d.CloseTime, "CloseTime", "dd.MM.yyyy HH:mm"),
                     (d => d.Open, "Open", null),
