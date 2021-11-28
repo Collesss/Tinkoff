@@ -1,6 +1,11 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.CommandLine;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using MyLogger;
+using save = MySaver;
 using System;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -11,19 +16,46 @@ namespace ConsoleAppTest
 {
     class Program
     {
+        private static IServiceProvider Services { get; set; }
+
         static void Main(string[] args)
         {
-            Test1().Wait();
+            IServiceCollection services = new ServiceCollection();
+
+            services.AddSingleton<IConfiguration>(new ConfigurationBuilder()
+                .AddJsonFile($@"{Directory.GetCurrentDirectory()}\config.json")
+                .AddCommandLine(args)
+                .Build());
+
+
+            services.AddSingleton(sp =>
+                MyConnectionFactory.GetConnection(sp.GetRequiredService<IConfiguration>().GetValue<string>("token"),
+                sp.GetRequiredService<ILogger<MyContext>>()));
+
+            services.AddSingleton<save.ISave<(string fileName, string sheetName)>>(new save.SaveInXml());
+
+            Services = services.BuildServiceProvider();
+
+            new MyMain(Services).Main();
+
+            Test1(args).Wait();
 
             Console.Write("press any key...");
             Console.ReadKey();
         }
-        public async static Task Test1()
+        public async static Task Test1(string[] args)
         {
-            IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddJsonFile("config.json").Build();
+            IConfiguration configuration = new ConfigurationBuilder()
+                .AddJsonFile($@"{Directory.GetCurrentDirectory()}\config.json")
+                .AddCommandLine(args)
+                .Build();
 
             // токен аутентификации
-            var token = configurationRoot["token"];
+            var token = configuration.GetValue<string>("token");
+            /*
+            Console.WriteLine(token);
+            Console.ReadKey();
+            */
             // для работы в песочнице используйте GetSandboxConnection
             var connection = MyConnectionFactory.GetConnection(token, new MyLogger<MyContext>("log.txt"));
             var context = connection.Context;
@@ -40,7 +72,7 @@ namespace ConsoleAppTest
 
             Regex regex = new Regex(@"[\\\/:*?""<>|]");
 
-            int days = 100;
+            int days = configuration.GetValue<int>("days");
 
             int i = 1;
 
