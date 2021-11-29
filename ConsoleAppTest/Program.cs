@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Tinkoff.Trading.OpenApi.Models;
 using TinkoffMyConnectionFactory;
 using System.Threading;
+using Tinkoff.Trading.OpenApi.Network;
 
 namespace ConsoleAppTest
 {
@@ -33,7 +34,12 @@ namespace ConsoleAppTest
                     sp.GetRequiredService<ILogger<MyContext>>()))
                 .AddSingleton<save.ISave<(string fileName, string sheetName)>, save.SaveInXml>()
                 .AddSingleton(Console.Out)
-                .AddSingleton<MyMain>()
+                .AddSingleton(sp => 
+                    new MyMain(
+                        sp.GetRequiredService<IConnection<IContext>>(),
+                        sp.GetRequiredService<save.ISave<(string fileName, string sheetName)>>(),
+                        sp.GetRequiredService<TextWriter>(),
+                        sp.GetRequiredService<IConfiguration>().GetValue<int>("days")))
                 .BuildServiceProvider();            
 
             CancellationTokenSource cancelTokenSource = new CancellationTokenSource();
