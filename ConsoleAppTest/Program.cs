@@ -11,6 +11,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Tinkoff.Trading.OpenApi.Models;
 using TinkoffMyConnectionFactory;
+using System.Threading;
 
 namespace ConsoleAppTest
 {
@@ -20,29 +21,41 @@ namespace ConsoleAppTest
 
         static void Main(string[] args)
         {
-            IServiceCollection services = new ServiceCollection();
+            Services = new ServiceCollection()
+                .AddSingleton<IConfiguration>(new ConfigurationBuilder()
+                    .AddJsonFile($@"{Directory.GetCurrentDirectory()}\config.json")
+                    .AddCommandLine(args)
+                    .Build())
+                .AddSingleton<ILogger<MyContext>>(sp =>
+                    new MyLogger<MyContext>(sp.GetRequiredService<IConfiguration>().GetValue<string>("logFile")))
+                .AddSingleton(sp =>
+                    MyConnectionFactory.GetConnection(sp.GetRequiredService<IConfiguration>().GetValue<string>("token"),
+                    sp.GetRequiredService<ILogger<MyContext>>()))
+                .AddSingleton<save.ISave<(string fileName, string sheetName)>, save.SaveInXml>()
+                .AddSingleton(Console.Out)
+                .AddSingleton<MyMain>()
+                .BuildServiceProvider();            
 
-            services.AddSingleton<IConfiguration>(new ConfigurationBuilder()
-                .AddJsonFile($@"{Directory.GetCurrentDirectory()}\config.json")
-                .AddCommandLine(args)
-                .Build());
+            CancellationTokenSource cancelTokenSource = new CancellationTokenSource();
 
+            Services.GetRequiredService<MyMain>().Main(cancelTokenSource.Token).Wait();
 
-            services.AddSingleton(sp =>
-                MyConnectionFactory.GetConnection(sp.GetRequiredService<IConfiguration>().GetValue<string>("token"),
-                sp.GetRequiredService<ILogger<MyContext>>()));
+            /*
+            if (Console.KeyAvailable)
+            {
+                ConsoleKeyInfo consoleKeyInfo = Console.ReadKey();
 
-            services.AddSingleton<save.ISave<(string fileName, string sheetName)>>(new save.SaveInXml());
-
-            Services = services.BuildServiceProvider();
-
-            new MyMain(Services).Main();
-
-            Test1(args).Wait();
+                if (consoleKeyInfo.Key == ConsoleKey.C && (consoleKeyInfo.Modifiers & ConsoleModifiers.Control) == ConsoleModifiers.Control)
+                    cancelTokenSource.Cancel();
+            }
+            */
+            //Test1(args).Wait();
 
             Console.Write("press any key...");
             Console.ReadKey();
         }
+
+        /*
         public async static Task Test1(string[] args)
         {
             IConfiguration configuration = new ConfigurationBuilder()
@@ -52,12 +65,12 @@ namespace ConsoleAppTest
 
             // токен аутентификации
             var token = configuration.GetValue<string>("token");
-            /*
+            
             Console.WriteLine(token);
             Console.ReadKey();
-            */
-            // для работы в песочнице используйте GetSandboxConnection
-            var connection = MyConnectionFactory.GetConnection(token, new MyLogger<MyContext>("log.txt"));
+            
+        // для работы в песочнице используйте GetSandboxConnection
+        var connection = MyConnectionFactory.GetConnection(token, new MyLogger<MyContext>("log.txt"));
             var context = connection.Context;
 
             var list = await context.MarketStocksAsync();
@@ -106,6 +119,7 @@ namespace ConsoleAppTest
             }
         }
 
+        
         static string GetGroup(DateTime dateTime)
         {
             ValueInRange<DateTime, TimeSpan, int> valueInRange = new ValueInRange<DateTime, TimeSpan, int>(
@@ -120,5 +134,6 @@ namespace ConsoleAppTest
 
             return $"{dateTime.Year}{dateTime.Month}{dateTime.Day}{valueInRange[dateTime]}";
         }
+        */
     }
 }
