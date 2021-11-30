@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using MySaver;
 using System;
 using System.Collections.Generic;
@@ -10,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Tinkoff.Trading.OpenApi.Models;
 using Tinkoff.Trading.OpenApi.Network;
+using TinkoffMyConnectionFactory;
 
 namespace ConsoleAppTest
 {
@@ -19,13 +21,15 @@ namespace ConsoleAppTest
         private readonly ISave<(string fileName, string sheetName)> _save;
         private readonly IConnection<IContext> _connection;
         private readonly TextWriter _streamWriter;
+        private readonly ILogger<MyContext> _logger;
         private readonly int _days;
 
-        public MyMain(IConnection<IContext> connection, ISave<(string fileName, string sheetName)> save, TextWriter streamWriter, int days)
+        public MyMain(IConnection<IContext> connection, ISave<(string fileName, string sheetName)> save, TextWriter streamWriter, ILogger<MyContext> logger, int days)
         {
             _save = save;
             _connection = connection;
             _streamWriter = streamWriter;
+            _logger = logger;
             _days = days;
         }
 

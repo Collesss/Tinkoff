@@ -6,11 +6,11 @@ using System.Text;
 
 namespace MyLogger
 {
-    public class MyLogger<T> : ILogger<T>
+    public class MyLoggerFile<T> : ILogger<T>
     {
         private readonly string _logfile;
 
-        public MyLogger(string logfile)
+        public MyLoggerFile(string logfile)
         {
             _logfile = logfile;
 
@@ -37,7 +37,7 @@ namespace MyLogger
                 }
                 catch(Exception e)
                 {
-                    writer.WriteLine($"da pizda: {e.Message}");
+                    writer.WriteLine($": {e.Message}");
                 }
             }
         }

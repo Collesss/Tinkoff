@@ -28,7 +28,7 @@ namespace ConsoleAppTest
                     .AddCommandLine(args)
                     .Build())
                 .AddSingleton<ILogger<MyContext>>(sp =>
-                    new MyLogger<MyContext>(sp.GetRequiredService<IConfiguration>().GetValue<string>("logFile")))
+                    new MyLoggerFile<MyContext>(sp.GetRequiredService<IConfiguration>().GetValue<string>("logFile")))
                 .AddSingleton(sp =>
                     MyConnectionFactory.GetConnection(sp.GetRequiredService<IConfiguration>().GetValue<string>("token"),
                     sp.GetRequiredService<ILogger<MyContext>>()))
@@ -39,6 +39,7 @@ namespace ConsoleAppTest
                         sp.GetRequiredService<IConnection<IContext>>(),
                         sp.GetRequiredService<save.ISave<(string fileName, string sheetName)>>(),
                         sp.GetRequiredService<TextWriter>(),
+                        sp.GetRequiredService<ILogger<MyContext>>(),
                         sp.GetRequiredService<IConfiguration>().GetValue<int>("days")))
                 .BuildServiceProvider();            
 
