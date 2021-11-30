@@ -13,6 +13,7 @@ using Tinkoff.Trading.OpenApi.Models;
 using TinkoffMyConnectionFactory;
 using System.Threading;
 using Tinkoff.Trading.OpenApi.Network;
+using System.Collections.Generic;
 
 namespace ConsoleAppTest
 {
@@ -29,17 +30,18 @@ namespace ConsoleAppTest
                     .Build())
                 .AddSingleton<ILogger<MyContext>>(sp =>
                     new MyLoggerFile<MyContext>(sp.GetRequiredService<IConfiguration>().GetValue<string>("logFile")))
+                .AddSingleton<ILogger<MyContext>, MyLoggerConsole<MyContext>>()
                 .AddSingleton(sp =>
-                    MyConnectionFactory.GetConnection(sp.GetRequiredService<IConfiguration>().GetValue<string>("token"),
-                    sp.GetRequiredService<ILogger<MyContext>>()))
+                    MyConnectionFactory.GetConnection(
+                        sp.GetRequiredService<IConfiguration>().GetValue<string>("token"),
+                        sp.GetRequiredService<IEnumerable<ILogger<MyContext>>>().Single(logger => logger is MyLoggerFile<MyContext>)))
                 .AddSingleton<save.ISave<(string fileName, string sheetName)>, save.SaveInXml>()
                 .AddSingleton(Console.Out)
                 .AddSingleton(sp => 
                     new MyMain(
                         sp.GetRequiredService<IConnection<IContext>>(),
                         sp.GetRequiredService<save.ISave<(string fileName, string sheetName)>>(),
-                        sp.GetRequiredService<TextWriter>(),
-                        sp.GetRequiredService<ILogger<MyContext>>(),
+                        sp.GetRequiredService<IEnumerable<ILogger<MyContext>>>(),
                         sp.GetRequiredService<IConfiguration>().GetValue<int>("days")))
                 .BuildServiceProvider();            
 

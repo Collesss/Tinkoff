@@ -17,19 +17,16 @@ namespace ConsoleAppTest
 {
     public class MyMain
     {
-        private readonly IConfiguration _configuration;
         private readonly ISave<(string fileName, string sheetName)> _save;
         private readonly IConnection<IContext> _connection;
-        private readonly TextWriter _streamWriter;
-        private readonly ILogger<MyContext> _logger;
+        private readonly List<ILogger<MyContext>> _logger;
         private readonly int _days;
 
-        public MyMain(IConnection<IContext> connection, ISave<(string fileName, string sheetName)> save, TextWriter streamWriter, ILogger<MyContext> logger, int days)
+        public MyMain(IConnection<IContext> connection, ISave<(string fileName, string sheetName)> save, IEnumerable<ILogger<MyContext>> logger, int days)
         {
             _save = save;
             _connection = connection;
-            _streamWriter = streamWriter;
-            _logger = logger;
+            _logger = logger.ToList();
             _days = days;
         }
 
@@ -41,11 +38,10 @@ namespace ConsoleAppTest
             
             foreach (var item in list.Instruments)
             {
-                _streamWriter.WriteLine($"{item.Name}: {item.Figi}: {item.Ticker};");
+                _logger.ForEach(logger => logger.LogInformation($"{item.Name}: {item.Figi}: {item.Ticker};"));
             }
 
-            _streamWriter.WriteLine(list.Total);
-            _streamWriter.WriteLine();
+            _logger.ForEach(logger => logger.LogInformation(list.Total.ToString()));
 
             Regex regex = new Regex(@"[\\\/:*?""<>|]");
 
@@ -79,7 +75,7 @@ namespace ConsoleAppTest
                     (d => d.High, "High", null)
                 });
 
-                _streamWriter.WriteLine($"Figi:{item.Figi} Name:{item.Name}; {i}/{list.Total}");
+                _logger.ForEach(logger => logger.LogInformation($"Figi:{item.Figi} Name:{item.Name}; {i}/{list.Total}"));
 
                 i++;
             }
