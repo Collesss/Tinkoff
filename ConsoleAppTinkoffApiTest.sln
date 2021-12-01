@@ -17,7 +17,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyLogger", "MyLogger\MyLogg
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MySaver", "MySaver\MySaver.csproj", "{6B18F3AC-2A56-43A6-AD84-47329120047D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleColorFormat", "ConsoleColorFormat\ConsoleColorFormat.csproj", "{5E466B1A-F292-4642-9F3C-95F6A1496434}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleColorFormat", "ConsoleColorFormat\ConsoleColorFormat.csproj", "{5E466B1A-F292-4642-9F3C-95F6A1496434}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestDB", "TestDB", "{B362F6BA-FDF8-40D4-9FDA-3C6CB02284AD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleAppTestDBEnyity", "ConsoleAppTestDBEnyity\ConsoleAppTestDBEnyity.csproj", "{3EA72BC0-B4B2-4B7B-82D1-804F1900CCA3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -55,9 +59,16 @@ Global
 		{5E466B1A-F292-4642-9F3C-95F6A1496434}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5E466B1A-F292-4642-9F3C-95F6A1496434}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5E466B1A-F292-4642-9F3C-95F6A1496434}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3EA72BC0-B4B2-4B7B-82D1-804F1900CCA3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3EA72BC0-B4B2-4B7B-82D1-804F1900CCA3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3EA72BC0-B4B2-4B7B-82D1-804F1900CCA3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3EA72BC0-B4B2-4B7B-82D1-804F1900CCA3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{3EA72BC0-B4B2-4B7B-82D1-804F1900CCA3} = {B362F6BA-FDF8-40D4-9FDA-3C6CB02284AD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7014ACCB-0CBE-45EE-9B8D-7857618FE319}
