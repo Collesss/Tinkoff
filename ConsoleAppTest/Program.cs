@@ -43,7 +43,7 @@ namespace ConsoleAppTest
                         sp.GetRequiredService<save.ISave<(string fileName, string sheetName)>>(),
                         sp.GetRequiredService<IEnumerable<ILogger<MyContext>>>(),
                         sp.GetRequiredService<IConfiguration>().GetValue<int>("days")))
-                .BuildServiceProvider();            
+                .BuildServiceProvider();
 
             CancellationTokenSource cancelTokenSource = new CancellationTokenSource();
 
