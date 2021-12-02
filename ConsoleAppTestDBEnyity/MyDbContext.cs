@@ -31,7 +31,8 @@ namespace ConsoleAppTestDBEnyity
                 .IsRequired();
 
             modelBuilder.Entity<User>()
-                .HasAlternateKey(user => user.Name);
+                .HasIndex(user => user.Name)
+                .IsUnique();
         }
     }
 }

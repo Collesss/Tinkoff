@@ -11,21 +11,26 @@ namespace ConsoleAppTestDBEnyity
             {
                 Console.WriteLine("Users:");
 
+                //context.Users.RemoveRange(context.Users);
+                //context.SaveChanges();
+
+                /*
                 foreach (User user in context.Users)
                     Console.WriteLine($"{user.Id}; {user.Name}; {user.DateOfBirth};");
+                */
 
                 Console.WriteLine();
 
-                User user1 = new User { Id = 20, DateOfBirth = DateTime.Now };
-                User user2 = new User { Id = 22, DateOfBirth = DateTime.Now };
+                User user1 = new User { Name = "test111", DateOfBirth = DateTime.Now };
+                User user2 = new User { Name = "test222", DateOfBirth = DateTime.Now };
 
                 //var ent1 = context.Users.Add(user1);
                 //context.Users.Add(user2);
 
-                context.Users.Update(user1);
-                context.Users.Update(user2);
+                context.Users.Add(user1);
+                context.Users.Add(user2);
 
-                context.SaveChanges();
+                //context.SaveChanges();
 
                 Console.WriteLine("Users:");
                 foreach (User user in context.Users)
@@ -38,7 +43,7 @@ namespace ConsoleAppTestDBEnyity
                 foreach (User user in context.Users)
                     Console.WriteLine($"{user.Id}; {user.Name}; {user.DateOfBirth};");
 
-                //context.SaveChanges();
+                context.SaveChanges();
 
                 Console.WriteLine("Users:");
                 foreach (User user in context.Users)
