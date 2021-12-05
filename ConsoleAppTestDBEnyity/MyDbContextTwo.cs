@@ -6,18 +6,19 @@ using System.Text;
 
 namespace ConsoleAppTestDBEnyity
 {
-    public class MyDbContext : DbContext
+    class MyDbContextTwo : DbContext
     {
-        public DbSet<User> Users { get; set; }
+        public DbSet<Test> Tests { get; set; }
 
-        public MyDbContext(/*DbContextOptions<MyDbContext> options*/) /*: base(options)*/
+        public MyDbContextTwo(/*DbContextOptions<MyDbContext> options*/) /*: base(options)*/
         {
+            Database.EnsureDeleted();
             Database.EnsureCreated();
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlite("Data source=test.db");
+            optionsBuilder.UseSqlite("Data source=test2.db");
 
             base.OnConfiguring(optionsBuilder);
         }
@@ -26,17 +27,7 @@ namespace ConsoleAppTestDBEnyity
         {
             base.OnModelCreating(modelBuilder);
 
-
-            /*
-            modelBuilder.Entity<User>()
-                .Property(user => user.Name)
-                .IsRequired();
-            */
-            /*
-            modelBuilder.Entity<User>()
-                .HasIndex(user => user.Name)
-                .IsUnique();
-            */
+            modelBuilder.Entity<Test>().Property(test => test.TestValue);
         }
     }
 }

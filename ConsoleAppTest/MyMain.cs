@@ -1,4 +1,7 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using DBTinkoff.Repositories;
+using DBTinkoffEntities.Entities;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MySaver;
 using System;
@@ -17,31 +20,39 @@ namespace ConsoleAppTest
 {
     public class MyMain
     {
-        private readonly ISave<(string fileName, string sheetName)> _save;
+        private readonly IServiceProvider _serviceProvider;
         private readonly IConnection<IContext> _connection;
-        private readonly List<ILogger<MyContext>> _logger;
+        private readonly IRepository<EntityCandlePayload> _repositoryCandle;
+        private readonly IRepository<EntityMarketInstrument> _repositoryMarket;
+        private readonly ISave<(string fileName, string sheetName)> _save;
+        private readonly ILogger<MyMain> _logger;
         private readonly int _days;
 
-        public MyMain(IConnection<IContext> connection, ISave<(string fileName, string sheetName)> save, IEnumerable<ILogger<MyContext>> logger, int days)
+        public MyMain(IServiceProvider serviceProvider, IConnection<IContext> connection, IRepository<EntityCandlePayload> repositoryCandle, IRepository<EntityMarketInstrument> repositoryMarket, ISave<(string fileName, string sheetName)> save, ILogger<MyMain> logger, int days)
         {
-            _save = save;
+            _serviceProvider = serviceProvider;
             _connection = connection;
-            _logger = logger.ToList();
+            _repositoryCandle = repositoryCandle;
+            _repositoryMarket = repositoryMarket;
+            _save = save;
+            _logger = logger;
             _days = days;
         }
 
         public async Task Main(CancellationToken cancellationToken)
         {
+            //IServiceScope scope = _serviceProvider.CreateScope();
+
             IContext context = _connection.Context;
 
             var list = await context.MarketStocksAsync();
             
             foreach (var item in list.Instruments)
             {
-                _logger.ForEach(logger => logger.LogInformation($"{item.Name}: {item.Figi}: {item.Ticker};"));
+                _logger.LogInformation($"{item.Name}: {item.Figi}: {item.Ticker};");
             }
 
-            _logger.ForEach(logger => logger.LogInformation(list.Total.ToString()));
+            _logger.LogInformation(list.Total.ToString());
 
             Regex regex = new Regex(@"[\\\/:*?""<>|]");
 
@@ -75,7 +86,7 @@ namespace ConsoleAppTest
                     (d => d.High, "High", null)
                 });
 
-                _logger.ForEach(logger => logger.LogInformation($"Figi:{item.Figi} Name:{item.Name}; {i}/{list.Total}"));
+                _logger.LogInformation($"Figi:{item.Figi} Name:{item.Name}; {i}/{list.Total}");
 
                 i++;
             }
