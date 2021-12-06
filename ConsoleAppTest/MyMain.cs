@@ -46,7 +46,9 @@ namespace ConsoleAppTest
             IContext context = _connection.Context;
 
             var list = await context.MarketStocksAsync();
-            
+
+            //await _repositoryMarket.CreateAsync(list.Instruments);
+
             foreach (var item in list.Instruments)
             {
                 _logger.LogInformation($"{item.Name}: {item.Figi}: {item.Ticker};");
@@ -72,7 +74,9 @@ namespace ConsoleAppTest
                 }
                 */
 
-                var candles = (await context.MarketCandlesAsync(item.Figi, DateTime.Now - TimeSpan.FromDays(_days), DateTime.Now, CandleInterval.Hour)).Candles
+                var notConfigureToSaveCandles = await context.MarketCandlesAsync(item.Figi, DateTime.Now - TimeSpan.FromDays(_days), DateTime.Now, CandleInterval.Hour);
+
+                var candles = notConfigureToSaveCandles.Candles
                     .GroupBy(el => $"{el.Time.Year}{el.Time.Month}{el.Time.Day}{(el.Time.Hour + 1) / 4}")
                     .Select(group => Data.AgregateCandle(group))
                     .OrderBy(aggCandle => aggCandle.OpenTime);
