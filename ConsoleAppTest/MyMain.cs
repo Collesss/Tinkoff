@@ -22,18 +22,18 @@ namespace ConsoleAppTest
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly IConnection<IContext> _connection;
-        private readonly IRepository<EntityCandlePayload> _repositoryCandle;
-        private readonly IRepository<EntityMarketInstrument> _repositoryMarket;
+        //private readonly IRepository<EntityCandlePayload> _repositoryCandle;
+        //private readonly IRepository<EntityMarketInstrument> _repositoryMarket;
         private readonly ISave<(string fileName, string sheetName)> _save;
         private readonly ILogger<MyMain> _logger;
         private readonly int _days;
 
-        public MyMain(IServiceProvider serviceProvider, IConnection<IContext> connection, IRepository<EntityCandlePayload> repositoryCandle, IRepository<EntityMarketInstrument> repositoryMarket, ISave<(string fileName, string sheetName)> save, ILogger<MyMain> logger, int days)
+        public MyMain(IServiceProvider serviceProvider, IConnection<IContext> connection, ISave<(string fileName, string sheetName)> save, ILogger<MyMain> logger, int days)
         {
             _serviceProvider = serviceProvider;
             _connection = connection;
-            _repositoryCandle = repositoryCandle;
-            _repositoryMarket = repositoryMarket;
+            //_repositoryCandle = repositoryCandle;
+            //_repositoryMarket = repositoryMarket;
             _save = save;
             _logger = logger;
             _days = days;
@@ -47,7 +47,11 @@ namespace ConsoleAppTest
 
             var list = await context.MarketStocksAsync();
 
-            //await _repositoryMarket.CreateAsync(list.Instruments);
+            using (IServiceScope scope = _serviceProvider.CreateScope())
+            {
+                await scope.ServiceProvider.GetRequiredService<IRepository<EntityMarketInstrument>>()
+                    .CreateAsync(list.Instruments.Select(stock => new EntityMarketInstrument(stock)));
+            }
 
             foreach (var item in list.Instruments)
             {
@@ -75,6 +79,14 @@ namespace ConsoleAppTest
                 */
 
                 var notConfigureToSaveCandles = await context.MarketCandlesAsync(item.Figi, DateTime.Now - TimeSpan.FromDays(_days), DateTime.Now, CandleInterval.Hour);
+
+                using (IServiceScope scope = _serviceProvider.CreateScope())
+                {
+                    await scope.ServiceProvider.GetRequiredService<IRepository<EntityCandlePayload>>()
+                        .CreateAsync(notConfigureToSaveCandles.Candles.Select(candle => new EntityCandlePayload(candle)));
+                }
+
+                //await _repositoryCandle.CreateAsync(notConfigureToSaveCandles.Candles.Select(candle => new EntityCandlePayload(candle)));
 
                 var candles = notConfigureToSaveCandles.Candles
                     .GroupBy(el => $"{el.Time.Year}{el.Time.Month}{el.Time.Day}{(el.Time.Hour + 1) / 4}")

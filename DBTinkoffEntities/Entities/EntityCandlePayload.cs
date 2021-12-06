@@ -9,5 +9,8 @@ namespace DBTinkoffEntities.Entities
 
         public EntityCandlePayload(decimal open, decimal close, decimal high, decimal low, decimal volume, DateTime time, CandleInterval interval, string figi)
             : base(open, close, high, low, volume, time, interval, figi) { }
+    
+        public EntityCandlePayload(CandlePayload candle) 
+            : base(candle.Open, candle.Close, candle.High, candle.Low, candle.Volume, candle.Time, candle.Interval, candle.Figi) { }
     }
 }

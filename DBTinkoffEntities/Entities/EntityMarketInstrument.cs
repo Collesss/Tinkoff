@@ -9,5 +9,8 @@ namespace DBTinkoffEntities.Entities
 
         public EntityMarketInstrument(string figi, string ticker, string isin, decimal minPriceIncrement, int lot, Currency currency, string name, InstrumentType type)
             : base(figi, ticker, isin, minPriceIncrement, lot, currency, name, type) { }
+
+        public EntityMarketInstrument(MarketInstrument stock)
+            : base(stock.Figi, stock.Ticker, stock.Isin, stock.MinPriceIncrement, stock.Lot, stock.Currency, stock.Name, stock.Type) { }
     }
 }

@@ -44,8 +44,6 @@ namespace ConsoleAppTest
                     new MyMain(
                         sp,
                         sp.GetRequiredService<IConnection<IContext>>(),
-                        sp.GetRequiredService<IRepository<EntityCandlePayload>>(),
-                        sp.GetRequiredService<IRepository<EntityMarketInstrument>>(),
                         sp.GetRequiredService<save.ISave<(string fileName, string sheetName)>>(),
                         sp.GetRequiredService<ILogger<MyMain>>(),
                         sp.GetRequiredService<IConfiguration>().GetValue<int>("days")))
