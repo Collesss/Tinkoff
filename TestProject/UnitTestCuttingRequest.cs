@@ -16,6 +16,7 @@ namespace TestProject
         
         private readonly IRepository<EntityCandlePayload> _repositoryCandle;
         private readonly IRepository<EntityMarketInstrument> _repositoryMarket;
+        private readonly IRepository<EntityDataAboutAlreadyLoaded> _repositoryDataAboutLoaded;
         private readonly DBTinkoffContext _dBTinkoffContext;
         public UnitTestCuttingRequest()
         {
@@ -23,6 +24,7 @@ namespace TestProject
 
             _repositoryMarket = new Repository<DBTinkoffContext, EntityMarketInstrument>(_dBTinkoffContext);
             _repositoryCandle = new Repository<DBTinkoffContext, EntityCandlePayload>(_dBTinkoffContext);
+            _repositoryDataAboutLoaded = new Repository<DBTinkoffContext, EntityDataAboutAlreadyLoaded>(_dBTinkoffContext);
 
             /*
             _mockRepositoryEntityCandlePayload = new Mock<IRepository<EntityCandlePayload>>();
@@ -48,18 +50,16 @@ namespace TestProject
             int groupId = 0;
 
             var values = _repositoryMarket.GetAll()
-                .Include(stock => stock.Candles)
+                .Include(stock => stock.DataAboutLoadeds)
                 .Single(stock => stock.Figi == "BBG000HLJ7M4")
-                .Candles
-                .Where(candle => candle.Time >= dotStart.Date)
-                .OrderBy(candle => candle.Time)
-                .GroupBy(candle => candle.Time.Date)
-                .GroupBy(group =>
+                .DataAboutLoadeds
+                .Where(dAL => dAL.Time >= dotStart.Date)
+                .GroupBy(dAL =>
                 {
-                    if ((group.Key.Date - dateTime.Date) > check)
+                    if ((dAL.Time - dateTime.Date) > check)
                         groupId++;
                     
-                    dateTime = group.Key;
+                    dateTime = dAL.Time;
 
                     return groupId;
                 })

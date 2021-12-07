@@ -8,6 +8,7 @@ namespace DBTinkoff
     {
         public DbSet<EntityMarketInstrument> Stoks { get; set; }
         public DbSet<EntityCandlePayload> Candles { get; set; }
+        public DbSet<EntityDataAboutAlreadyLoaded> DataAboutLoadeds { get; set; }
 
         /*
         public DBTinkoffContext()
@@ -34,6 +35,7 @@ namespace DBTinkoff
 
             modelBuilder.ApplyConfiguration(new EntityMarketInstrumentConfiguration());
             modelBuilder.ApplyConfiguration(new EntityCandlePayloadConfiguration());
+            modelBuilder.ApplyConfiguration(new EntityDataAboutAlreadyLoadedConfiguration());
         }
     }
 }

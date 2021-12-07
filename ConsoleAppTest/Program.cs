@@ -51,6 +51,7 @@ namespace ConsoleAppTest
                     options.UseSqlite(services.GetRequiredService<IConfiguration>().GetConnectionString("DefaultConnection")))
                 .AddScoped<IRepository<EntityCandlePayload>, Repository<DBTinkoffContext, EntityCandlePayload>>()
                 .AddScoped<IRepository<EntityMarketInstrument>, Repository<DBTinkoffContext, EntityMarketInstrument>>()
+                .AddScoped<IRepository<EntityDataAboutAlreadyLoaded>, Repository<DBTinkoffContext, EntityDataAboutAlreadyLoaded>>()
                 .BuildServiceProvider();
 
             CancellationTokenSource cancelTokenSource = new CancellationTokenSource();
