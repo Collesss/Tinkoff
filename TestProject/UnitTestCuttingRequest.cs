@@ -19,7 +19,7 @@ namespace TestProject
         private readonly DBTinkoffContext _dBTinkoffContext;
         public UnitTestCuttingRequest()
         {
-            _dBTinkoffContext = new DBTinkoffContext(new DbContextOptionsBuilder<DBTinkoffContext>().UseSqlite("Data source=test.db").Options);
+            _dBTinkoffContext = new DBTinkoffContext(new DbContextOptionsBuilder<DBTinkoffContext>().UseSqlite("Data source=cache.db").Options);
 
             _repositoryMarket = new Repository<DBTinkoffContext, EntityMarketInstrument>(_dBTinkoffContext);
             _repositoryCandle = new Repository<DBTinkoffContext, EntityCandlePayload>(_dBTinkoffContext);
@@ -37,24 +37,40 @@ namespace TestProject
         [Fact]
         public void Test1()
         {
+            DateTime dotStart = DateTime.Now - TimeSpan.FromDays(25);
+
             DateTime dateTime = DateTime.MinValue;
 
             TimeSpan check = TimeSpan.FromDays(1);
 
-            int group = 1;
+            Console.WriteLine(dotStart.Date);
 
-            _repositoryMarket.GetAll().FirstOrDefault().Candles
+            int groupId = 0;
+
+            var values = _repositoryMarket.GetAll()
+                .Include(stock => stock.Candles)
+                .Single(stock => stock.Figi == "BBG000HLJ7M4")
+                .Candles
+                .Where(candle => candle.Time >= dotStart.Date)
                 .OrderBy(candle => candle.Time)
-                .GroupBy(candle => 
+                .GroupBy(candle => candle.Time.Date)
+                .GroupBy(group =>
                 {
-                    if ((dateTime.Date - candle.Time.Date) > check)
-                    {
-                        dateTime = candle.Time;
-                        group++;
-                    }
+                    if ((group.Key.Date - dateTime.Date) > check)
+                        groupId++;
+                    
+                    dateTime = group.Key;
 
-                    return group;
-                });
+                    return groupId;
+                })
+                .ToList();
+                /*.ToList()
+                .ForEach(group =>
+                {
+                    Console.WriteLine($"group id: {group.Key}; start Time: {group.First().Time}; end Time: {group.Last().Time};");
+                });*/
+
+            
 
             Assert.True(true, "OK");
         }

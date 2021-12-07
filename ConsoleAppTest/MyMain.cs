@@ -47,11 +47,13 @@ namespace ConsoleAppTest
 
             var list = await context.MarketStocksAsync();
 
+            /*
             using (IServiceScope scope = _serviceProvider.CreateScope())
             {
                 await scope.ServiceProvider.GetRequiredService<IRepository<EntityMarketInstrument>>()
                     .CreateAsync(list.Instruments.Select(stock => new EntityMarketInstrument(stock)));
             }
+            */
 
             foreach (var item in list.Instruments)
             {
@@ -80,14 +82,14 @@ namespace ConsoleAppTest
 
                 var notConfigureToSaveCandles = await context.MarketCandlesAsync(item.Figi, DateTime.Now - TimeSpan.FromDays(_days), DateTime.Now, CandleInterval.Hour);
 
+                /*
                 using (IServiceScope scope = _serviceProvider.CreateScope())
                 {
                     await scope.ServiceProvider.GetRequiredService<IRepository<EntityCandlePayload>>()
                         .CreateAsync(notConfigureToSaveCandles.Candles.Select(candle => new EntityCandlePayload(candle)));
                 }
-
-                //await _repositoryCandle.CreateAsync(notConfigureToSaveCandles.Candles.Select(candle => new EntityCandlePayload(candle)));
-
+                */
+                
                 var candles = notConfigureToSaveCandles.Candles
                     .GroupBy(el => $"{el.Time.Year}{el.Time.Month}{el.Time.Day}{(el.Time.Hour + 1) / 4}")
                     .Select(group => Data.AgregateCandle(group))

@@ -29,7 +29,7 @@ namespace ConsoleAppTest
         {
             Services = new ServiceCollection()
                 .AddSingleton<IConfiguration>(new ConfigurationBuilder()
-                    .AddJsonFile($@"{Directory.GetCurrentDirectory()}\config.json")
+                    .AddJsonFile($@"{Directory.GetCurrentDirectory()}\config.json", true)
                     .AddCommandLine(args)
                     .Build())
                 .AddSingleton<ILogger<MyContext>>(sp =>
