@@ -39,9 +39,11 @@ namespace TestProject
         [Fact]
         public void Test1()
         {
-            DateTime dotStart = DateTime.Now - TimeSpan.FromDays(25);
+            int days = 100;
 
-            DateTime dateTime = DateTime.MinValue;
+            DateTime dotStart = DateTime.Now - TimeSpan.FromDays(days);
+
+            DateTime dateTime = dotStart.AddDays(-1).Date;
 
             TimeSpan check = TimeSpan.FromDays(1);
 
@@ -51,10 +53,25 @@ namespace TestProject
 
             var values = _repositoryMarket.GetAll()
                 .Include(stock => stock.DataAboutLoadeds)
-                .Single(stock => stock.Figi == "BBG000HLJ7M4")
+                .Single(stock => stock.Figi == "BBG000QY3XZ2")
                 .DataAboutLoadeds
                 .Where(dAL => dAL.Time >= dotStart.Date)
-                .GroupBy(dAL =>
+                .Select(dAL => dAL.Time)
+                .OrderBy(time => time)
+                .Prepend(dotStart.AddDays(-1).Date)
+                .Append(DateTime.Today.AddDays(1))
+                .GroupBy(time =>
+                {
+                    if ((time - dotStart) <= check)
+                    {
+                        dotStart = time;
+                        return -1;
+                    }
+
+                    return
+                })
+
+                /*.GroupBy(dAL =>
                 {
                     if ((dAL.Time - dateTime.Date) > check)
                         groupId++;
@@ -63,14 +80,15 @@ namespace TestProject
 
                     return groupId;
                 })
+                .Select(gr => (gr.Key, gr.Min(data => data.Time), gr.Max(data => data.Time), gr))
                 .ToList();
-                /*.ToList()
+                .ToList()
                 .ForEach(group =>
                 {
                     Console.WriteLine($"group id: {group.Key}; start Time: {group.First().Time}; end Time: {group.Last().Time};");
                 });*/
 
-            
+
 
             Assert.True(true, "OK");
         }
