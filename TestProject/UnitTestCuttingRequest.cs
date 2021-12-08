@@ -53,7 +53,7 @@ namespace TestProject
 
             var values = _repositoryMarket.GetAll()
                 .Include(stock => stock.DataAboutLoadeds)
-                .Single(stock => stock.Figi == "BBG000QY3XZ2")
+                .Single(stock => stock.Figi == "BBG000DW76Y6")
                 .DataAboutLoadeds
                 .Where(dAL => dAL.Time >= dotStart.Date)
                 .Select(dAL => dAL.Time)
@@ -63,13 +63,14 @@ namespace TestProject
                 .GroupBy(time =>
                 {
                     if ((time - dotStart) <= check)
-                    {
-                        dotStart = time;
-                        return -1;
-                    }
+                        groupId++;
 
-                    return
+                    dotStart = time;
+
+                    return groupId;
                 })
+                .Where(group => group.Count() == 2)
+                .ToList();
 
                 /*.GroupBy(dAL =>
                 {
