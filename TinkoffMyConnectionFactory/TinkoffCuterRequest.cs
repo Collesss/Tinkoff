@@ -63,12 +63,7 @@ namespace TinkoffMyConnectionFactory
                 yield return (from: from, to: (from += TimeSpan.FromDays(_daysForIntervals[CandleInterval])) < _to ? from : _to);
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            DateTime from = _from;
-
-            while (from < _to)
-                yield return (from: from, to: (from += TimeSpan.FromDays(_daysForIntervals[CandleInterval])) < _to ? from : _to);
-        }
+        IEnumerator IEnumerable.GetEnumerator() =>
+            GetEnumerator();
     }
 }

@@ -1,5 +1,6 @@
 ﻿using DBTinkoff.Repositories;
 using DBTinkoffEntities.Entities;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -45,28 +46,33 @@ namespace ConsoleAppTest
 
             IContext context = _connection.Context;
 
-            var list = await context.MarketStocksAsync();
+            //var stocks = await context.MarketStocksAsync();
 
+            List<EntityMarketInstrument> stocks;
             
             using (IServiceScope scope = _serviceProvider.CreateScope())
             {
-                await scope.ServiceProvider.GetRequiredService<IRepository<EntityMarketInstrument>>()
-                    .CreateAsync(list.Instruments.Select(stock => new EntityMarketInstrument(stock)));
-            }
-            
+                IRepository<EntityMarketInstrument> repositoryStock = scope.ServiceProvider.GetRequiredService<IRepository<EntityMarketInstrument>>();
 
-            foreach (var item in list.Instruments)
-            {
+                await repositoryStock.CreateAsync((await context.MarketStocksAsync()).Instruments.Select(stock => new EntityMarketInstrument(stock)).Except(repositoryStock.GetAll()));
+
+                stocks = await repositoryStock.GetAll().ToListAsync();
+            }
+
+            DateTime dateTimeStart = (DateTime.Now - TimeSpan.FromDays(_days)).Date;
+            DateTime dateTimeEnd = (DateTime.Now + TimeSpan.FromDays(1)).Date;
+
+
+            foreach (var item in stocks)
                 _logger.LogInformation($"{item.Name}: {item.Figi}: {item.Ticker};");
-            }
 
-            _logger.LogInformation(list.Total.ToString());
+            _logger.LogInformation(stocks.Count.ToString());
 
             Regex regex = new Regex(@"[\\\/:*?""<>|]");
 
             int i = 1;
 
-            foreach (var item in list.Instruments)
+            foreach (var item in stocks)
             {
                 if (cancellationToken.IsCancellationRequested)
                     break;
@@ -80,21 +86,17 @@ namespace ConsoleAppTest
                 }
                 */
 
-                DateTime dateTimeStart = DateTime.Now - TimeSpan.FromDays(_days);
 
-                DateTime dateTimeEnd = DateTime.Now;
 
                 var notConfigureToSaveCandles = await context.MarketCandlesAsync(item.Figi, dateTimeStart, DateTime.Now, CandleInterval.Hour);
-
                 
                 using (IServiceScope scope = _serviceProvider.CreateScope())
                 {
-                    await scope.ServiceProvider.GetRequiredService<IRepository<EntityCandlePayload>>()
-                        .CreateAsync(notConfigureToSaveCandles.Candles.Select(candle => new EntityCandlePayload(candle)));
+                    //await scope.ServiceProvider.GetRequiredService<IRepository<EntityCandlePayload>>()
+                    //    .CreateAsync(notConfigureToSaveCandles.Candles.Select(candle => new EntityCandlePayload(candle)));
 
-
-                    await scope.ServiceProvider.GetRequiredService<IRepository<EntityDataAboutAlreadyLoaded>>()
-                        .CreateAsync(Enumerable.Range(0, _days).Select(i => new EntityDataAboutAlreadyLoaded(item.Figi, dateTimeStart.AddDays(i).Date, CandleInterval.Hour)));
+                    //await scope.ServiceProvider.GetRequiredService<IRepository<EntityDataAboutAlreadyLoaded>>()
+                    //    .CreateAsync(Enumerable.Range(0, _days).Select(i => new EntityDataAboutAlreadyLoaded(item.Figi, dateTimeStart.AddDays(i).Date, CandleInterval.Hour)));
                 }
                 
                 
@@ -112,7 +114,7 @@ namespace ConsoleAppTest
                     (d => d.High, "High", null)
                 });
 
-                _logger.LogInformation($"Figi:{item.Figi} Name:{item.Name}; {i}/{list.Total}");
+                _logger.LogInformation($"Figi:{item.Figi} Name:{item.Name}; {i}/{stocks.Count()}");
 
                 i++;
             }

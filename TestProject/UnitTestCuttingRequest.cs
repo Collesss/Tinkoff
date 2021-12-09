@@ -4,6 +4,7 @@ using DBTinkoffEntities.Entities;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Tinkoff.Trading.OpenApi.Models;
 using Xunit;
@@ -58,7 +59,7 @@ namespace TestProject
                 .Where(dAL => dAL.Time >= dotStart.Date)
                 .Select(dAL => dAL.Time)
                 .OrderBy(time => time)
-                .Prepend(dotStart.AddDays(-1).Date)
+                .Prepend(dotStart.Date.AddDays(-1))
                 .Append(DateTime.Today.AddDays(1))
                 .GroupBy(time =>
                 {
@@ -69,25 +70,48 @@ namespace TestProject
 
                     return groupId;
                 })
-                .Where(group => group.Count() == 2)
+                .Where(group => group.Count() > 1)
+                .Select(group => (start: group.Min().AddDays(1), end: group.Max()))
                 .ToList();
 
-                /*.GroupBy(dAL =>
-                {
-                    if ((dAL.Time - dateTime.Date) > check)
+            List<(DateTime start, DateTime end)> rangesQueries = new List<(DateTime start, DateTime end)>();
+
+            DateTime dateTimeLast = (DateTime.Now - TimeSpan.FromDays(days + 1)).Date;
+
+            foreach (var item in _repositoryMarket.GetAll()
+                .Include(stock => stock.DataAboutLoadeds)
+                .Single(stock => stock.Figi == "BBG000DW76Y6")
+                .DataAboutLoadeds
+                .Where(dAL => dAL.Time >= dotStart.Date)
+                .Select(dAL => dAL.Time)
+                .OrderBy(time => time)
+                .Prepend(dotStart.Date.AddDays(-1))
+                .Append(DateTime.Today.AddDays(1)))
+            {
+                /*if ((time - dotStart) <= check)
                         groupId++;
-                    
-                    dateTime = dAL.Time;
 
-                    return groupId;
-                })
-                .Select(gr => (gr.Key, gr.Min(data => data.Time), gr.Max(data => data.Time), gr))
-                .ToList();
-                .ToList()
-                .ForEach(group =>
-                {
-                    Console.WriteLine($"group id: {group.Key}; start Time: {group.First().Time}; end Time: {group.Last().Time};");
-                });*/
+                    dotStart = time;
+
+                    return groupId;*/
+            }
+
+            /*.GroupBy(dAL =>
+            {
+                if ((dAL.Time - dateTime.Date) > check)
+                    groupId++;
+
+                dateTime = dAL.Time;
+
+                return groupId;
+            })
+            .Select(gr => (gr.Key, gr.Min(data => data.Time), gr.Max(data => data.Time), gr))
+            .ToList();
+            .ToList()
+            .ForEach(group =>
+            {
+                Console.WriteLine($"group id: {group.Key}; start Time: {group.First().Time}; end Time: {group.Last().Time};");
+            });*/
 
 
 
