@@ -40,6 +40,7 @@ namespace TestProject
         [Fact]
         public void Test1()
         {
+            /*
             int days = 100;
 
             DateTime dotStart = DateTime.Now - TimeSpan.FromDays(days);
@@ -78,7 +79,7 @@ namespace TestProject
 
             DateTime dateTimeLast = (DateTime.Now - TimeSpan.FromDays(days + 1)).Date;
 
-            foreach (var item in _repositoryMarket.GetAll()
+            foreach (DateTime time in _repositoryMarket.GetAll()
                 .Include(stock => stock.DataAboutLoadeds)
                 .Single(stock => stock.Figi == "BBG000DW76Y6")
                 .DataAboutLoadeds
@@ -88,32 +89,39 @@ namespace TestProject
                 .Prepend(dotStart.Date.AddDays(-1))
                 .Append(DateTime.Today.AddDays(1)))
             {
-                /*if ((time - dotStart) <= check)
-                        groupId++;
+                if ((time - dateTimeLast) > check)
+                    rangesQueries.Add((start: dateTimeLast, end: time));
 
-                    dotStart = time;
-
-                    return groupId;*/
+                dateTimeLast = time;
             }
+            */
 
-            /*.GroupBy(dAL =>
+            int days = 100;
+
+            DateTime start = DateTime.Today.AddDays(-days).Date;
+            DateTime end = DateTime.Today.AddDays(1);
+
+            DateTime dateTimeLast = start.AddDays(-1);
+
+            var dataAboutLoaded = _repositoryMarket.GetAll()
+                .Include(stock => stock.DataAboutLoadeds)
+                .Single(stock => stock.Figi == "BBG000DW76Y6")
+                .DataAboutLoadeds
+                .Where(dAL => dAL.Time >= start)
+                .Select(dAL => dAL.Time)
+                .OrderBy(time => time)
+                .Append(end);
+
+            List<(DateTime start, DateTime end)> rangesQueries = new List<(DateTime start, DateTime end)>();
+
+            TimeSpan check = TimeSpan.FromDays(1);
+
+            foreach (DateTime time in dataAboutLoaded)
             {
-                if ((dAL.Time - dateTime.Date) > check)
-                    groupId++;
-
-                dateTime = dAL.Time;
-
-                return groupId;
-            })
-            .Select(gr => (gr.Key, gr.Min(data => data.Time), gr.Max(data => data.Time), gr))
-            .ToList();
-            .ToList()
-            .ForEach(group =>
-            {
-                Console.WriteLine($"group id: {group.Key}; start Time: {group.First().Time}; end Time: {group.Last().Time};");
-            });*/
-
-
+                if ((time - dateTimeLast) > check)
+                    rangesQueries.Add((start: dateTimeLast.AddDays(1), end: time));
+                dateTimeLast = time;
+            }
 
             Assert.True(true, "OK");
         }

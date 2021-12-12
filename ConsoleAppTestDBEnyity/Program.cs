@@ -25,7 +25,7 @@ namespace ConsoleAppTestDBEnyity
             {
                 //Console.WriteLine("Users:");
 
-                PrintUserInfo(context);
+                //PrintUserInfo(context);
 
                 //context.Users.RemoveRange(context.Users);
                 //context.SaveChanges();
@@ -37,14 +37,14 @@ namespace ConsoleAppTestDBEnyity
 
                 Console.WriteLine();
 
-                User user1 = new User { Id = 1, Name = "test111", DateOfBirth = DateTime.Now };
-                User user2 = new User { Id = 2, Name = "test222", DateOfBirth = DateTime.Now };
+                User user1 = new User { Id = 3, Name = "test1112" };
+                User user2 = new User { Id = 4, Name = "test2223" };
 
                 //var ent1 = context.Users.Add(user1);
                 //context.Users.Add(user2);
 
-                context.Users.Remove(user1);
-                context.Users.Remove(user2);
+                context.Users.Update(user1);
+                context.Users.Update(user2);
 
                 //context.SaveChanges();
 
@@ -69,7 +69,7 @@ namespace ConsoleAppTestDBEnyity
         {
             Console.WriteLine("Users:");
             foreach (User user in context.Users)
-                Console.WriteLine($"{user.Id}; {user.Name}; {user.DateOfBirth};");
+                Console.WriteLine($"{user.Id}; {user.Name};");
         }
     }
 }
