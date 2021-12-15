@@ -11,10 +11,10 @@ namespace DBTinkoffEntities.EqualityComparers
             x != null &&
             y != null &&
             x.Figi == y.Figi &&
-            x.Ticker == y.Ticker &&
+            //x.Ticker == y.Ticker &&
             x.Isin == y.Isin;
 
         int IEqualityComparer<EntityMarketInstrument>.GetHashCode(EntityMarketInstrument obj) =>
-            obj.Figi.GetHashCode()^(~obj.Ticker.GetHashCode()*obj.Isin.GetHashCode());
+            obj.Figi.GetHashCode()^obj.Isin.GetHashCode();
     }
 }

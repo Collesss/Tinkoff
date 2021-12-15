@@ -10,7 +10,6 @@ namespace DBTinkoffEntities.Configurations
         {
             builder.HasKey(stock => stock.Figi);
 
-            builder.HasAlternateKey(stock => stock.Ticker);
             builder.HasAlternateKey(stock => stock.Isin);
 
             builder.Property(stock => stock.MinPriceIncrement);
@@ -18,6 +17,8 @@ namespace DBTinkoffEntities.Configurations
             builder.Property(stock => stock.Currency);
             builder.Property(stock => stock.Type);
 
+            builder.HasIndex(stock => stock.Ticker)
+                .IsUnique();
 
             builder.HasIndex(stock => stock.Name);
 

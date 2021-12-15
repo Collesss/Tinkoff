@@ -191,6 +191,8 @@ namespace ConsoleAppTest
                         .CreateAsync(Enumerable.Range(0, _days)
                         .Select(i => new EntityDataAboutAlreadyLoaded(stock.Figi, start.AddDays(i).Date, CandleInterval.Hour))
                         .Except(stock.DataAboutLoadeds, new CommonEqualityComparer<EntityDataAboutAlreadyLoaded>()));
+
+                    scope.ServiceProvider.GetRequiredService<DBTinkoffContext>().Attach(stock);
                 }
                 
                 
@@ -204,7 +206,7 @@ namespace ConsoleAppTest
                 {
                     (d => d.CloseTime, "CloseTime", "dd.MM.yyyy HH:mm"),
                     (d => d.Open, "Open", null),
-                    (d => d.Close, "Cloes", null),
+                    (d => d.Close, "Close", null),
                     (d => d.Low, "Low", null),
                     (d => d.High, "High", null)
                 });
