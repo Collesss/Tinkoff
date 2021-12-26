@@ -56,37 +56,21 @@ namespace ConsoleAppTest
             {
                 IRepository<EntityMarketInstrument> repositoryStock = scope.ServiceProvider.GetRequiredService<IRepository<EntityMarketInstrument>>();
 
-                //var t = await repositoryStock.GetAll().SingleOrDefaultAsync(el => el.Figi == "BBG001K7WBT8");
-
-                //var a = (await context.MarketStocksAsync()).Instruments.Select(stock => new EntityMarketInstrument(stock)).Except(repositoryStock.GetAll().AsNoTracking(), new CommonEqualityComparer<EntityMarketInstrument>()).ToList();
-
                 var noTrakStocks = await repositoryStock.GetAll().AsNoTracking().ToListAsync();
 
-                //EntityMarketInstrumentKeyEqualityComparer
                 var CreateAndUpdate = (await context.MarketStocksAsync())
                     .Instruments
                     .Select(stock => new EntityMarketInstrument(stock))
                     .Except(noTrakStocks, new CommonEqualityComparer<EntityMarketInstrument>())
                     .ToList();
 
-                //new EntityMarketInstrumentKeyEqualityComparer()
-                //new CommonEqualityComparer<EntityMarketInstrument>()
                 var Create = CreateAndUpdate.Except(noTrakStocks, new EntityMarketInstrumentKeyEqualityComparer()).ToList();
                 var Update = CreateAndUpdate.Except(Create, new EntityMarketInstrumentKeyEqualityComparer()).ToList();
 
                 await repositoryStock.CreateAsync(Create);
                 await repositoryStock.UpdateAsync(Update);
 
-                /*
-                await repositoryStock.UpdateAsync((await context.MarketStocksAsync())
-                    .Instruments
-                    .Select(stock => new EntityMarketInstrument(stock))
-                    .Except(repositoryStock.GetAll().AsNoTracking(), new CommonEqualityComparer<EntityMarketInstrument>()));
-                */
-
                 stocks = await repositoryStock.GetAll()
-                    //.Include(stock => stock.Candles)
-                    //.Include(stock => stock.DataAboutLoadeds)
                     .ToListAsync();
             }
 
@@ -107,6 +91,8 @@ namespace ConsoleAppTest
             
             foreach (var stock in stocks)
             {
+                List<EntityDataAboutAlreadyLoaded> dAL = new List<EntityDataAboutAlreadyLoaded>();
+
                 using (IServiceScope scope = _serviceProvider.CreateScope())
                 {
                     var contextTinkoff = scope.ServiceProvider.GetRequiredService<DBTinkoffContext>();
@@ -115,11 +101,13 @@ namespace ConsoleAppTest
                     
                     contextTinkoff.Attach(stock);
 
+                    /*
                     contextTinkoff.Entry(stock)
                         .Collection(s => s.Candles)
                         .Query()
                         .Where(c => c.Time > start)
                         .Load();
+                    */
 
                     contextTinkoff.Entry(stock)
                         .Collection(s => s.DataAboutLoadeds)
@@ -170,9 +158,17 @@ namespace ConsoleAppTest
 
                 using (IServiceScope scope = _serviceProvider.CreateScope())
                 {
-                    var CreateAndUpdateCandle = entityCandlePayloads.Except(stock.Candles, new CommonEqualityComparer<EntityCandlePayload>()).ToList();
+                    var stockCandles = await scope.ServiceProvider.GetRequiredService<DBTinkoffContext>()
+                        .Attach(stock)
+                        .Collection(stock => stock.Candles)
+                        .Query()
+                        .AsNoTracking()
+                        .Where(c => c.Time > start)
+                        .ToListAsync();
 
-                    var CreateCandle = CreateAndUpdateCandle.Except(stock.Candles, new EntityCandlePayloadKeyEqualityComparer()).ToList();
+                    var CreateAndUpdateCandle = entityCandlePayloads.Except(stockCandles, new CommonEqualityComparer<EntityCandlePayload>()).ToList();
+
+                    var CreateCandle = CreateAndUpdateCandle.Except(stockCandles, new EntityCandlePayloadKeyEqualityComparer()).ToList();
                     var UpdateCandle = CreateAndUpdateCandle.Except(CreateCandle, new EntityCandlePayloadKeyEqualityComparer()).ToList();
 
                     var repositoryCandle = scope.ServiceProvider.GetRequiredService<IRepository<EntityCandlePayload>>();
