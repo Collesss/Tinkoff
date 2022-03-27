@@ -30,15 +30,19 @@ namespace ConsoleAppTest
         private readonly ISave<(string fileName, string sheetName)> _save;
         private readonly ILogger<MyMain> _logger;
         private readonly int _days;
+        private readonly ICustomFilter _customFilter;
+        private readonly IConfiguration _configuration;
 
-        public MyMain(IServiceProvider serviceProvider, IConnection<IContext> connection, ISave<(string fileName, string sheetName)> save, ILogger<MyMain> logger, int days)
+        public MyMain(IConfiguration configuration, IServiceProvider serviceProvider, IConnection<IContext> connection, ISave<(string fileName, string sheetName)> save, ILogger<MyMain> logger, ICustomFilter customFilter, int days)
         {
+            _configuration = configuration;
             _serviceProvider = serviceProvider;
             _connection = connection;
             //_repositoryCandle = repositoryCandle;
             //_repositoryMarket = repositoryMarket;
             _save = save;
             _logger = logger;
+            _customFilter = customFilter;
             _days = days;
         }
 
@@ -89,6 +93,8 @@ namespace ConsoleAppTest
             DateTime start = DateTime.UtcNow.Date.AddDays(-_days).Date;
             DateTime end = DateTime.UtcNow.Date.AddDays(1);
             
+            
+
             foreach (var stock in stocks)
             {
                 List<EntityDataAboutAlreadyLoaded> dAL = new List<EntityDataAboutAlreadyLoaded>();
