@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using MySaver;
 using System;
 using System.Collections.Generic;
@@ -25,34 +26,24 @@ namespace ConsoleAppTest
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly IConnection<IContext> _connection;
-        //private readonly IRepository<EntityCandlePayload> _repositoryCandle;
-        //private readonly IRepository<EntityMarketInstrument> _repositoryMarket;
         private readonly ISave<(string fileName, string sheetName)> _save;
         private readonly ILogger<MyMain> _logger;
-        private readonly int _days;
         private readonly ICustomFilter _customFilter;
-        private readonly IConfiguration _configuration;
+        private readonly IOptions<Options> _options;
 
-        public MyMain(IConfiguration configuration, IServiceProvider serviceProvider, IConnection<IContext> connection, ISave<(string fileName, string sheetName)> save, ILogger<MyMain> logger, ICustomFilter customFilter, int days)
+        public MyMain(IServiceProvider serviceProvider, IConnection<IContext> connection, ISave<(string fileName, string sheetName)> save, ILogger<MyMain> logger, ICustomFilter customFilter, IOptions<Options> options)
         {
-            _configuration = configuration;
             _serviceProvider = serviceProvider;
             _connection = connection;
-            //_repositoryCandle = repositoryCandle;
-            //_repositoryMarket = repositoryMarket;
             _save = save;
             _logger = logger;
             _customFilter = customFilter;
-            _days = days;
+            _options = options;
         }
 
         public async Task Main(CancellationToken cancellationToken)
         {
-            //IServiceScope scope = _serviceProvider.CreateScope();
-
             IContext context = _connection.Context;
-
-            //var stocks = await context.MarketStocksAsync();
 
             List<EntityMarketInstrument> stocks;
             
@@ -77,9 +68,6 @@ namespace ConsoleAppTest
                 stocks = await repositoryStock.GetAll()
                     .ToListAsync();
             }
-
-            //DateTime dateTimeStart = (DateTime.Now - TimeSpan.FromDays(_days)).Date;
-            //DateTime dateTimeEnd = (DateTime.Now + TimeSpan.FromDays(1)).Date;
             
             foreach (var stock in stocks)
                 _logger.LogInformation($"{stock.Name}: {stock.Figi}: {stock.Ticker};");
@@ -90,10 +78,11 @@ namespace ConsoleAppTest
 
             int i = 1;
 
-            DateTime start = DateTime.UtcNow.Date.AddDays(-_days).Date;
+            DateTime start = DateTime.UtcNow.Date.AddDays(-_options.Value.Days).Date;
             DateTime end = DateTime.UtcNow.Date.AddDays(1);
-            
-            
+
+            if (_options.Value.CustomFilter)
+                _customFilter.Filtring(stocks);
 
             foreach (var stock in stocks)
             {
@@ -103,17 +92,7 @@ namespace ConsoleAppTest
                 {
                     var contextTinkoff = scope.ServiceProvider.GetRequiredService<DBTinkoffContext>();
 
-                    //contextTinkoff.Candles.AddOrUpdate();
-                    
                     contextTinkoff.Attach(stock);
-
-                    /*
-                    contextTinkoff.Entry(stock)
-                        .Collection(s => s.Candles)
-                        .Query()
-                        .Where(c => c.Time > start)
-                        .Load();
-                    */
 
                     contextTinkoff.Entry(stock)
                         .Collection(s => s.DataAboutLoadeds)
@@ -124,15 +103,6 @@ namespace ConsoleAppTest
 
                 if (cancellationToken.IsCancellationRequested)
                     break;
-                /*
-                if (Console.KeyAvailable)
-                {
-                    ConsoleKeyInfo consoleKeyInfo = Console.ReadKey();
-
-                    if (consoleKeyInfo.Key == ConsoleKey.C && (consoleKeyInfo.Modifiers & ConsoleModifiers.Control) == ConsoleModifiers.Control)
-                        break;
-                }
-                */
 
                 DateTime dateTimeLast = start.AddDays(-1);
 
@@ -182,15 +152,8 @@ namespace ConsoleAppTest
                     await repositoryCandle.CreateAsync(CreateCandle);
                     await repositoryCandle.UpdateAsync(UpdateCandle);
 
-
-                    /*
-                    var t = Enumerable.Range(0, _days)
-                        .Select(i => new EntityDataAboutAlreadyLoaded(stock.Figi, start.AddDays(i).Date, CandleInterval.Hour))
-                        .Except(stock.DataAboutLoadeds, new CommonEqualityComparer<EntityDataAboutAlreadyLoaded>());
-                    */
-
                     await scope.ServiceProvider.GetRequiredService<IRepository<EntityDataAboutAlreadyLoaded>>()
-                        .CreateAsync(Enumerable.Range(0, _days)
+                        .CreateAsync(Enumerable.Range(0, _options.Value.Days)
                         .Select(i => new EntityDataAboutAlreadyLoaded(stock.Figi, start.AddDays(i).Date, CandleInterval.Hour))
                         .Except(stock.DataAboutLoadeds, new CommonEqualityComparer<EntityDataAboutAlreadyLoaded>()));
 

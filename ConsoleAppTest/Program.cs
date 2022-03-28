@@ -18,40 +18,40 @@ using Microsoft.EntityFrameworkCore;
 using DBTinkoff;
 using DBTinkoff.Repositories;
 using DBTinkoffEntities.Entities;
+using Microsoft.Extensions.Options;
 
 namespace ConsoleAppTest
 {
     class Program
     {
         private static IServiceProvider Services { get; set; }
+        private static IConfiguration Configuration { get; set; }
 
         static void Main(string[] args)
         {
+            Configuration = new ConfigurationBuilder()
+                .AddJsonFile($@"{Directory.GetCurrentDirectory()}\config.json", true)
+                .AddCommandLine(args)
+                .Build();
+
             Services = new ServiceCollection()
-                .AddSingleton<IConfiguration>(new ConfigurationBuilder()
-                    .AddJsonFile($@"{Directory.GetCurrentDirectory()}\config.json", true)
-                    .AddCommandLine(args)
-                    .Build())
+                .AddSingleton(Configuration)
+                .Configure<Options>(Configuration.GetSection("Options"))
                 .AddSingleton<ILogger<MyContext>>(sp =>
-                    new MyLoggerFile<MyContext>(sp.GetRequiredService<IConfiguration>().GetValue<string>("logFile")))
+                    new MyLoggerFile<MyContext>(sp.GetRequiredService<IOptions<Options>>().Value.LogFile))
                 .AddSingleton<ILogger<MyMain>, MyLoggerConsole<MyMain>>()
                 .AddSingleton(sp =>
                     MyConnectionFactory.GetConnection(
-                        sp.GetRequiredService<IConfiguration>().GetValue<string>("token"),
+                        sp.GetRequiredService<IOptions<Options>>().Value.Token,
                         sp.GetRequiredService<ILogger<MyContext>>()))
                 .AddSingleton<save.ISave<(string fileName, string sheetName)>, save.SaveInXml>()
-                .AddSingleton(sp => 
-                    new MyMain(
-                        sp,
-                        sp.GetRequiredService<IConnection<IContext>>(),
-                        sp.GetRequiredService<save.ISave<(string fileName, string sheetName)>>(),
-                        sp.GetRequiredService<ILogger<MyMain>>(),
-                        sp.GetRequiredService<IConfiguration>().GetValue<int>("days")))
+                .AddSingleton<MyMain>()
                 .AddDbContext<DBTinkoffContext>((services, options) =>
                     options.UseSqlite(services.GetRequiredService<IConfiguration>().GetConnectionString("DefaultConnection")))
                 .AddScoped<IRepository<EntityCandlePayload>, Repository<DBTinkoffContext, EntityCandlePayload>>()
                 .AddScoped<IRepository<EntityMarketInstrument>, Repository<DBTinkoffContext, EntityMarketInstrument>>()
                 .AddScoped<IRepository<EntityDataAboutAlreadyLoaded>, Repository<DBTinkoffContext, EntityDataAboutAlreadyLoaded>>()
+                .AddSingleton<ICustomFilter>(sp => new CustomFilter(sp.GetRequiredService<IOptions<Options>>().Value.CustomFilterData))
                 .BuildServiceProvider();
 
             CancellationTokenSource cancelTokenSource = new CancellationTokenSource();
@@ -72,5 +72,8 @@ namespace ConsoleAppTest
             Console.Write("press any key...");
             Console.ReadKey();
         }
+
+
+
     }
 }
