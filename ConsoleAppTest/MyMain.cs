@@ -84,6 +84,10 @@ namespace ConsoleAppTest
             if (_options.Value.CustomFilter)
                 _customFilter.Filtring(stocks);
 
+            stocks = stocks.ToList();
+
+            Console.WriteLine(stocks.Count);
+
             foreach (var stock in stocks)
             {
                 List<EntityDataAboutAlreadyLoaded> dAL = new List<EntityDataAboutAlreadyLoaded>();
