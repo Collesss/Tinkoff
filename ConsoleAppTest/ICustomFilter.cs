@@ -7,6 +7,6 @@ namespace ConsoleAppTest
 {
     public interface ICustomFilter
     {
-        public void Filtring(IEnumerable<EntityMarketInstrument> entities);
+        public IEnumerable<EntityMarketInstrument> Filtring(IEnumerable<EntityMarketInstrument> entities);
     }
 }

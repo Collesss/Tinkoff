@@ -82,7 +82,7 @@ namespace ConsoleAppTest
             DateTime end = DateTime.UtcNow.Date.AddDays(1);
 
             if (_options.Value.CustomFilter)
-                _customFilter.Filtring(stocks);
+                stocks = _customFilter.Filtring(stocks).ToList();
 
             stocks = stocks.ToList();
 

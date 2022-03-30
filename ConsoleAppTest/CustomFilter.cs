@@ -15,7 +15,7 @@ namespace ConsoleAppTest
             _urlDownLoad = urlDownLoad;
         }
 
-        void ICustomFilter.Filtring(IEnumerable<EntityMarketInstrument> entities)
+        IEnumerable<EntityMarketInstrument> ICustomFilter.Filtring(IEnumerable<EntityMarketInstrument> entities)
         {
             new WebClient().DownloadFile(_urlDownLoad, "file.pdf");
 
@@ -25,13 +25,15 @@ namespace ConsoleAppTest
 
             string res = pdfFocus.ToText();
 
-            pdfFocus.ToExcel("test.xlsx");
-
             pdfFocus.ClosePdf();
 
-            List<string> Isins = new Regex(@"\b[A-Z0-9]{12}\b").Matches(res).Select(match => match.Value).Distinct().ToList();
+            List<string> Isins = new Regex(@"\b[A-Z0-9]{12}\b")
+                .Matches(res)
+                .Select(match => match.Value)
+                .Distinct()
+                .ToList();
 
-            entities.Where(entity => Isins.Contains(entity.Isin));
+            return entities.Where(entity => Isins.Contains(entity.Isin));
         }
     }
 }
