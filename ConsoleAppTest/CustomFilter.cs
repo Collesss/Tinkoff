@@ -4,24 +4,25 @@ using System.Net;
 using System.Linq;
 using SautinSoft;
 using System.Text.RegularExpressions;
+using System;
 
 namespace ConsoleAppTest
 {
     public class CustomFilter : ICustomFilter
     {
-        private readonly string _urlDownLoad;
+        private readonly Uri _uriDownLoad;
         public CustomFilter(string urlDownLoad)
         {
-            _urlDownLoad = urlDownLoad;
+            _uriDownLoad = new Uri(urlDownLoad);
         }
 
         IEnumerable<EntityMarketInstrument> ICustomFilter.Filtring(IEnumerable<EntityMarketInstrument> entities)
         {
-            new WebClient().DownloadFile(_urlDownLoad, "file.pdf");
+            //new WebClient().DownloadFile(_urlDownLoad, "file.pdf");
 
             PdfFocus pdfFocus = new PdfFocus();
 
-            pdfFocus.OpenPdf("file.pdf");
+            pdfFocus.OpenPdf(_uriDownLoad);
 
             string res = pdfFocus.ToText();
 

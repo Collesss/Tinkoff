@@ -13,10 +13,13 @@ namespace DBTinkoff
             IEnumerable<TEntity> entities, IEqualityComparer<TEntity> entityComparer, 
             IEqualityComparer<TEntity> entityKeyComparer) where TEntity : class
         {
-            var dbEntities = await dbSet.Where(entity => entities.Any(el => entityKeyComparer.Equals(entity, el))).ToListAsync();
+            //var dbEntities = await dbSet.Where(entity => entities.Any(el => entityKeyComparer.Equals(entity, el))).AsNoTracking().ToListAsync();
 
-            //var create = entities.Except(dbEntities, entityKeyComparer);
-            //var update = entities.Except(create, entityComparer);
+            var create = await entities.AsQueryable().Except(dbSet, entityKeyComparer).ToListAsync();
+            var update = await entities.AsQueryable().Except(dbSet, entityComparer).Except(create, entityKeyComparer).ToListAsync();
+
+            await dbSet.AddRangeAsync(create);
+            dbSet.UpdateRange(update);
         }
     }
 }

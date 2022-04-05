@@ -3,22 +3,18 @@ using DBTinkoff.Repositories;
 using DBTinkoffEntities.Entities;
 using DBTinkoffEntities.EqualityComparers;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MySaver;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Tinkoff.Trading.OpenApi.Models;
 using Tinkoff.Trading.OpenApi.Network;
-using TinkoffMyConnectionFactory;
 
 namespace ConsoleAppTest
 {
@@ -26,12 +22,12 @@ namespace ConsoleAppTest
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly IConnection<IContext> _connection;
-        private readonly ISave<(string fileName, string sheetName)> _save;
+        private readonly ISave<(string fileName, string sheetName), Data> _save;
         private readonly ILogger<MyMain> _logger;
         private readonly ICustomFilter _customFilter;
         private readonly IOptions<Options> _options;
 
-        public MyMain(IServiceProvider serviceProvider, IConnection<IContext> connection, ISave<(string fileName, string sheetName)> save, ILogger<MyMain> logger, ICustomFilter customFilter, IOptions<Options> options)
+        public MyMain(IServiceProvider serviceProvider, IConnection<IContext> connection, ISave<(string fileName, string sheetName), Data> save, ILogger<MyMain> logger, ICustomFilter customFilter, IOptions<Options> options)
         {
             _serviceProvider = serviceProvider;
             _connection = connection;
@@ -49,7 +45,7 @@ namespace ConsoleAppTest
             
             using (IServiceScope scope = _serviceProvider.CreateScope())
             {
-                IRepository<EntityMarketInstrument> repositoryStock = scope.ServiceProvider.GetRequiredService<IRepository<EntityMarketInstrument>>();
+                //IRepository<EntityMarketInstrument> repositoryStock = scope.ServiceProvider.GetRequiredService<IRepository<EntityMarketInstrument>>();
 
                 var noTrakStocks = await repositoryStock.GetAll().AsNoTracking().ToListAsync();
 
