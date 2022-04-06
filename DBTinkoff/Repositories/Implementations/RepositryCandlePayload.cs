@@ -50,7 +50,7 @@ namespace DBTinkoff.Repositories.Implementations
                     return incGroup ? ++group : group;
                 })
                 .Where(gr => gr.Count() > 1)
-                .Select(gr => (from: gr.Min(), to: gr.Max()))
+                .Select(gr => (from: gr.Min().AddDays(1), to: gr.Max()))
                 .ToList();
 
             List<CandlePayload> candleIntervals = downloadIntervals
@@ -59,7 +59,7 @@ namespace DBTinkoff.Repositories.Implementations
 
             await _dBTinkoffContext.Candles.Merge(_mapper.Map<List<EntityCandlePayload>>(candleIntervals), new EntityCandlePayloadEqualityComparer(), new EntityCandlePayloadKeyEqualityComparer());
             await _dBTinkoffContext.SaveChangesAsync();
-
+            //mark DataAboutLoad to load
             return _mapper.Map<List<CandlePayload>>(_dBTinkoffContext.Candles.Where(candle => candle.Time >= from && candle.Time <= to && candle.Figi == figi && candle.Interval == interval).OrderBy(candle => candle.Time));
         }
     }
