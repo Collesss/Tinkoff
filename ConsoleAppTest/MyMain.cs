@@ -161,7 +161,7 @@ namespace ConsoleAppTest
                         .Select(i => new EntityDataAboutAlreadyLoaded(stock.Figi, start.AddDays(i).Date, CandleInterval.Hour))
                         .Except(stock.DataAboutLoadeds, new CommonEqualityComparer<EntityDataAboutAlreadyLoaded>()));
 
-                    scope.ServiceProvider.GetRequiredService<DBTinkoffContext>().Attach(stock);
+                    await scope.ServiceProvider.GetRequiredService<DBTinkoffContext>().Attach(stock).Collection(st => st.Candles).LoadAsync();
                 }
                 
                 
