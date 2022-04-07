@@ -1,4 +1,5 @@
-﻿using DBTinkoff;
+﻿using ConsoleAppTest.Transform;
+using DBTinkoff;
 using DBTinkoff.Repositories;
 using DBTinkoff.Repositories.Interfaces;
 using DBTinkoffEntities.Entities;
@@ -8,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MySaver;
+using MySaver.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,37 +24,39 @@ namespace ConsoleAppTest
     public class MyMain
     {
         private readonly IServiceProvider _serviceProvider;
-        private readonly ISave<(string fileName, string sheetName), Data> _save;
+        private readonly ISave<SaveExcelData<Data>> _save;
         private readonly ILogger<MyMain> _logger;
         private readonly ICustomFilter _customFilter;
         private readonly IOptions<Options> _options;
+        private readonly IRepositoryMarketInstrument _repositoryMarketInstrument;
+        private readonly IRepositoryCandlePayload _repositoryCandlePayload;
+        private readonly ITransform<IEnumerable<CandlePayload>, IEnumerable<Data>> _transform;
 
         public MyMain(IServiceProvider serviceProvider,
-            ISave<(string fileName, string sheetName), Data> save, 
-            ILogger<MyMain> logger, ICustomFilter customFilter, 
+            ISave<SaveExcelData<Data>> save, 
+            ILogger<MyMain> logger, 
+            ICustomFilter customFilter,
+            IRepositoryMarketInstrument repositoryMarketInstrument,
+            IRepositoryCandlePayload repositoryCandlePayload,
             IOptions<Options> options)
         {
             _serviceProvider = serviceProvider;
             _save = save;
             _logger = logger;
             _customFilter = customFilter;
+            _repositoryMarketInstrument = repositoryMarketInstrument;
+            _repositoryCandlePayload = repositoryCandlePayload;
             _options = options;
         }
 
         public async Task Main(CancellationToken cancellationToken)
         {
-            IEnumerable<MarketInstrument> marketInstruments;
+            IEnumerable<MarketInstrument> stocks = await _repositoryMarketInstrument.GetAllAsync();
 
-            using (IServiceScope scope = _serviceProvider.CreateScope())
-            {
-                marketInstruments = await scope.ServiceProvider.GetRequiredService<IRepositoryMarketInstrument>().GetAllAsync();
-            }
- 
-            
-            foreach (var stock in marketInstruments)
+            foreach (var stock in stocks)
                 _logger.LogInformation($"{stock.Name}: {stock.Figi}: {stock.Ticker};");
 
-            _logger.LogInformation(marketInstruments.Count.ToString());
+            _logger.LogInformation(stocks.Count().ToString());
 
             Regex regex = new Regex(@"[\\\/:*?""<>|]");
 
@@ -66,28 +70,15 @@ namespace ConsoleAppTest
 
             stocks = stocks.ToList();
 
-            Console.WriteLine(stocks.Count);
+            Console.WriteLine(stocks.Count());
 
             foreach (var stock in stocks)
             {
-                List<EntityDataAboutAlreadyLoaded> dAL = new List<EntityDataAboutAlreadyLoaded>();
-
-                using (IServiceScope scope = _serviceProvider.CreateScope())
-                {
-                    var contextTinkoff = scope.ServiceProvider.GetRequiredService<DBTinkoffContext>();
-
-                    contextTinkoff.Attach(stock);
-
-                    contextTinkoff.Entry(stock)
-                        .Collection(s => s.DataAboutLoadeds)
-                        .Query()
-                        .Where(d => d.Time >= start)
-                        .Load();
-                }
-
+                //List<EntityDataAboutAlreadyLoaded> dAL = new List<EntityDataAboutAlreadyLoaded>();
+                
                 if (cancellationToken.IsCancellationRequested)
                     break;
-
+                /*
                 DateTime dateTimeLast = start.AddDays(-1);
 
                 var dataAboutLoaded = stock
@@ -109,15 +100,11 @@ namespace ConsoleAppTest
                         rangesQueries.Add((start: dateTimeLast.AddDays(1), end: utcTime));
                     dateTimeLast = utcTime;
                 }
+                */
 
-                
-                var candles = stock.Candles
-                    .Where(candle => candle.Time > start)
-                    .GroupBy(el => $"{el.Time.Year}|{el.Time.Month}|{el.Time.Day}|{(el.Time.Hour + 1) / 4}")
-                    .Select(group => Data.AgregateCandle(group))
-                    .OrderBy(aggCandle => aggCandle.OpenTime);
+                var candles = _transform.Transform(await _repositoryCandlePayload.MarketCandleAsync("figi", start, end, CandleInterval.Hour));
 
-                await _save.Save(($"{regex.Replace(stock.Name, match => "_")}.xlsx", "Data"), candles);
+                await _save.Save(new SaveExcelData<Data>($"{regex.Replace(stock.Name, match => "_")}.xlsx", "Data", candles));
 
                 _logger.LogInformation($"Figi:{stock.Figi} Name:{stock.Name}; {i}/{stocks.Count()}");
 

@@ -6,7 +6,7 @@ using Tinkoff.Trading.OpenApi.Models;
 
 namespace DBTinkoff.Repositories.Interfaces
 {
-    public interface IRepositoryMarketInstrument : IRepositryBase
+    public interface IRepositoryMarketInstrument
     {
         Task<IEnumerable<MarketInstrument>> GetAllAsync();
     }

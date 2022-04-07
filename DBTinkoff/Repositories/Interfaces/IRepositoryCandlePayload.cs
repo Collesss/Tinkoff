@@ -6,7 +6,7 @@ using Tinkoff.Trading.OpenApi.Models;
 
 namespace DBTinkoff.Repositories.Interfaces
 {
-    public interface IRepositoryCandlePayload : IRepositryBase
+    public interface IRepositoryCandlePayload
     {
         Task<IEnumerable<CandlePayload>> MarketCandleAsync(string figi, DateTime from, DateTime to, CandleInterval interval);
     }

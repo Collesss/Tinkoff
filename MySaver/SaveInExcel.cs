@@ -1,4 +1,5 @@
-﻿using OfficeOpenXml;
+﻿using MySaver.Models;
+using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -7,12 +8,12 @@ using System.Threading.Tasks;
 
 namespace MySaver
 {
-    public class SaveInExcel<V> : ISave<(string fileName, string sheetName), V>
+    public class SaveInExcel<T> : ISave<SaveExcelData<T>>
     {
-        private readonly IEnumerable<(Func<V, object> element, string header, string format)> _columns;
+        private readonly IEnumerable<(Func<T, object> element, string header, string format)> _columns;
         private readonly string _saveDirectory;
 
-        public SaveInExcel(IEnumerable<(Func<V, object> element, string header, string format)> columns, string saveDirectory)
+        public SaveInExcel(IEnumerable<(Func<T, object> element, string header, string format)> columns, string saveDirectory)
         {
             if (!Directory.Exists(saveDirectory))
                 Directory.CreateDirectory(saveDirectory);
@@ -21,18 +22,18 @@ namespace MySaver
             _columns = columns;
         }
 
-        async Task ISave<(string fileName, string sheetName), V>.Save((string fileName, string sheetName) metaDataForSave, IEnumerable<V> elements)
+        async Task ISave<SaveExcelData<T>>.Save(SaveExcelData<T> saveExcelData)
         {
             await Task.Run(() =>
             {
-                metaDataForSave.fileName = $@"{_saveDirectory}\{metaDataForSave.fileName}";
+                string fileName = $@"{_saveDirectory}\{saveExcelData.FileName}";
 
-                if (File.Exists(metaDataForSave.fileName))
-                    File.Delete(metaDataForSave.fileName);
+                if (File.Exists(fileName))
+                    File.Delete(fileName);
 
-                using (ExcelPackage excelPackage = new ExcelPackage(new FileInfo(metaDataForSave.fileName)))
+                using (ExcelPackage excelPackage = new ExcelPackage(new FileInfo(fileName)))
                 {
-                    ExcelWorksheet worksheet = excelPackage.Workbook.Worksheets.Add(metaDataForSave.sheetName);
+                    ExcelWorksheet worksheet = excelPackage.Workbook.Worksheets.Add(saveExcelData.SheetName);
 
                     int i = 1;
 
@@ -46,7 +47,7 @@ namespace MySaver
 
                     i = 2;
 
-                    foreach (var element in elements)
+                    foreach (var element in saveExcelData.Data)
                     {
                         int j = 1;
 

@@ -1,5 +1,7 @@
 ﻿using DBTinkoff;
 using DBTinkoff.Repositories;
+using DBTinkoff.Repositories.Implementations;
+using DBTinkoff.Repositories.Interfaces;
 using DBTinkoffEntities.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -7,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MyLogger;
+using MySaver.Models;
 using System;
 using System.IO;
 using System.Threading;
@@ -33,7 +36,10 @@ namespace ConsoleAppTest
 
             CancellationTokenSource cancelTokenSource = new CancellationTokenSource();
 
-            Services.GetRequiredService<MyMain>().Main(cancelTokenSource.Token).Wait();
+            using (IServiceScope scope = Services.CreateScope())
+            {
+                scope.ServiceProvider.GetRequiredService<MyMain>().Main(cancelTokenSource.Token).Wait();
+            }
 
             /*
             if (Console.KeyAvailable)
@@ -62,7 +68,7 @@ namespace ConsoleAppTest
                     MyConnectionFactory.GetConnection(
                         sp.GetRequiredService<IOptions<Options>>().Value.Token,
                         sp.GetRequiredService<ILogger<MyContext>>()))
-                .AddSingleton<save.ISave<(string fileName, string sheetName), Data>>(sp =>
+                .AddSingleton<save.ISave<SaveExcelData<Data>>>(sp =>
                     new save.SaveInExcel<Data>(new (Func<Data, object> element, string header, string format)[]
                     {
                         (d => d.CloseTime, "CloseTime", "dd.MM.yyyy HH:mm"),
@@ -71,12 +77,12 @@ namespace ConsoleAppTest
                         (d => d.Low, "Low", null),
                         (d => d.High, "High", null)
                     }, "Data"))
-                .AddSingleton<MyMain>()
+                .AddScoped<MyMain>()
                 .AddDbContext<DBTinkoffContext>((services, options) =>
-                    options.UseSqlite(services.GetRequiredService<IConfiguration>().GetConnectionString("DefaultConnection")))
-                .AddScoped<IRepository<EntityCandlePayload>, Repository<DBTinkoffContext, EntityCandlePayload>>()
-                .AddScoped<IRepository<EntityMarketInstrument>, Repository<DBTinkoffContext, EntityMarketInstrument>>()
-                .AddScoped<IRepository<EntityDataAboutAlreadyLoaded>, Repository<DBTinkoffContext, EntityDataAboutAlreadyLoaded>>()
+                    options.UseSqlite(services.GetRequiredService<IConfiguration>().GetConnectionString("DefaultConnection"))
+                           .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking))
+                .AddScoped<IRepositoryMarketInstrument, RepositoryMarketInstrument>()
+                .AddScoped<IRepositoryCandlePayload, RepositoryCandlePayload>()
                 .AddSingleton<ICustomFilter>(sp => new CustomFilter(sp.GetRequiredService<IOptions<Options>>().Value.CustomFilterData));
         }
     }

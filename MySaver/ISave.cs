@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 
 namespace MySaver
 {
-    public interface ISave<T, V>
+    public interface ISave<T>
     {
-        Task Save(T metaDataForSave, IEnumerable<V> elements);
+        Task Save(T dataForSave);
     }
 }

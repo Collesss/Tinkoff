@@ -5,6 +5,7 @@ using System.Linq;
 using SautinSoft;
 using System.Text.RegularExpressions;
 using System;
+using Tinkoff.Trading.OpenApi.Models;
 
 namespace ConsoleAppTest
 {
@@ -16,7 +17,7 @@ namespace ConsoleAppTest
             _uriDownLoad = new Uri(urlDownLoad);
         }
 
-        IEnumerable<EntityMarketInstrument> ICustomFilter.Filtring(IEnumerable<EntityMarketInstrument> entities)
+        IEnumerable<MarketInstrument> ICustomFilter.Filtring(IEnumerable<MarketInstrument> entities)
         {
             //new WebClient().DownloadFile(_urlDownLoad, "file.pdf");
 

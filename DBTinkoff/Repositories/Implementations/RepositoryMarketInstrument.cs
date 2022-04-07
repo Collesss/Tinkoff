@@ -1,14 +1,13 @@
 ﻿using AutoMapper;
+using DBTinkoff.Repositories.Interfaces;
 using DBTinkoffEntities.Entities;
 using DBTinkoffEntities.EqualityComparers;
-using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Tinkoff.Trading.OpenApi.Models;
 using Tinkoff.Trading.OpenApi.Network;
 
-namespace DBTinkoff.Repositories.Interfaces
+namespace DBTinkoff.Repositories.Implementations
 {
     public class RepositoryMarketInstrument : IRepositoryMarketInstrument
     {

@@ -3,7 +3,6 @@ using DBTinkoff.Repositories.Interfaces;
 using System;
 using System.Linq;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Tinkoff.Trading.OpenApi.Models;
 using Tinkoff.Trading.OpenApi.Network;
@@ -13,13 +12,13 @@ using DBTinkoffEntities.Entities;
 
 namespace DBTinkoff.Repositories.Implementations
 {
-    public class RepositryCandlePayload : IRepositoryCandlePayload
+    public class RepositoryCandlePayload : IRepositoryCandlePayload
     {
         private readonly IConnection<IContext> _connection;
         private readonly DBTinkoffContext _dBTinkoffContext;
         private readonly IMapper _mapper;
 
-        public RepositryCandlePayload(IConnection<IContext> connection, DBTinkoffContext dBTinkoffContext, IMapper mapper)
+        public RepositoryCandlePayload(IConnection<IContext> connection, DBTinkoffContext dBTinkoffContext, IMapper mapper)
         {
             _connection = connection;
             _dBTinkoffContext = dBTinkoffContext;
