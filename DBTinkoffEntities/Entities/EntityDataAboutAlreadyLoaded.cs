@@ -5,19 +5,11 @@ using Tinkoff.Trading.OpenApi.Models;
 
 namespace DBTinkoffEntities.Entities
 {
-    public class EntityDataAboutAlreadyLoaded : IEquatable<EntityDataAboutAlreadyLoaded>
+    public class EntityDataAboutAlreadyLoaded : DataAboutAlreadyLoaded, IEquatable<EntityDataAboutAlreadyLoaded>
     {
-        public string Figi { get; }
-        public DateTime Time { get; }
-        public CandleInterval Interval { get; }
         public EntityMarketInstrument Stock { get; set; }
 
-        public EntityDataAboutAlreadyLoaded(string figi, DateTime time, CandleInterval interval)
-        {
-            Figi = figi;
-            Time = time;
-            Interval = interval;
-        }
+        public EntityDataAboutAlreadyLoaded(string figi, DateTime time, CandleInterval interval) : base(figi, time, interval) { }
 
         bool IEquatable<EntityDataAboutAlreadyLoaded>.Equals(EntityDataAboutAlreadyLoaded other) =>
             other != null &&

@@ -15,8 +15,8 @@ namespace DBTinkoff
         {
             //var dbEntities = await dbSet.Where(entity => entities.Any(el => entityKeyComparer.Equals(entity, el))).AsNoTracking().ToListAsync();
 
-            var create = await entities.AsQueryable().Except(dbSet, entityKeyComparer).ToListAsync();
-            var update = await entities.AsQueryable().Except(dbSet, entityComparer).Except(create, entityKeyComparer).ToListAsync();
+            var create = entities.Except(dbSet, entityKeyComparer);
+            var update = entities.Except(dbSet, entityComparer).Except(create, entityKeyComparer);
 
             await dbSet.AddRangeAsync(create);
             dbSet.UpdateRange(update);

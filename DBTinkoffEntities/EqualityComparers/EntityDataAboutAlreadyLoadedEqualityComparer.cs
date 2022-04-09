@@ -5,7 +5,7 @@ using System.Text;
 
 namespace DBTinkoffEntities.EqualityComparers
 {
-    class EntityDataAboutAlreadyLoadedEqualityComparer : IEqualityComparer<EntityDataAboutAlreadyLoaded>
+    public class EntityDataAboutAlreadyLoadedEqualityComparer : IEqualityComparer<EntityDataAboutAlreadyLoaded>
     {
         bool IEqualityComparer<EntityDataAboutAlreadyLoaded>.Equals(EntityDataAboutAlreadyLoaded x, EntityDataAboutAlreadyLoaded y) =>
             x?.Equals(y) ?? false;

@@ -1,8 +1,7 @@
-﻿using DBTinkoff;
-using DBTinkoff.Repositories;
+﻿using ConsoleAppTest.Transform;
+using DBTinkoff;
 using DBTinkoff.Repositories.Implementations;
 using DBTinkoff.Repositories.Interfaces;
-using DBTinkoffEntities.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,8 +10,10 @@ using Microsoft.Extensions.Options;
 using MyLogger;
 using MySaver.Models;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using Tinkoff.Trading.OpenApi.Models;
 using TinkoffMyConnectionFactory;
 using save = MySaver;
 
@@ -34,10 +35,10 @@ namespace ConsoleAppTest
             ConfigureServices(serviceCollection);
             Services = serviceCollection.BuildServiceProvider();
 
-            CancellationTokenSource cancelTokenSource = new CancellationTokenSource();
-
             using (IServiceScope scope = Services.CreateScope())
             {
+                CancellationTokenSource cancelTokenSource = new CancellationTokenSource();
+
                 scope.ServiceProvider.GetRequiredService<MyMain>().Main(cancelTokenSource.Token).Wait();
             }
 
@@ -83,6 +84,8 @@ namespace ConsoleAppTest
                            .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking))
                 .AddScoped<IRepositoryMarketInstrument, RepositoryMarketInstrument>()
                 .AddScoped<IRepositoryCandlePayload, RepositoryCandlePayload>()
+                .AddScoped<IRepositoryDataAboutAlreadyLoaded, RepositoryDataAboutAlreadyLoaded>()
+                .AddSingleton<ITransform<IEnumerable<CandlePayload>, IEnumerable<Data>>, Transform.Transform>()
                 .AddSingleton<ICustomFilter>(sp => new CustomFilter(sp.GetRequiredService<IOptions<Options>>().Value.CustomFilterData));
         }
     }

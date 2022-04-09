@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace MySaver
@@ -26,7 +27,7 @@ namespace MySaver
         {
             await Task.Run(() =>
             {
-                string fileName = $@"{_saveDirectory}\{saveExcelData.FileName}";
+                string fileName = $@"{_saveDirectory}\{Regex.Replace(saveExcelData.FileName, @"[\\\/:*?""<>|]", "_")}.xlsx";
 
                 if (File.Exists(fileName))
                     File.Delete(fileName);
