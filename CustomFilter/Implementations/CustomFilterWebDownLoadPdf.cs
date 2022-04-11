@@ -1,18 +1,17 @@
-﻿using DBTinkoffEntities.Entities;
-using System.Collections.Generic;
-using System.Net;
+﻿using System.Collections.Generic;
 using System.Linq;
 using SautinSoft;
 using System.Text.RegularExpressions;
 using System;
 using Tinkoff.Trading.OpenApi.Models;
+using CustomFilter.Interfaces;
 
-namespace ConsoleAppTest
+namespace CustomFilter.Implementations
 {
-    public class CustomFilter : ICustomFilter
+    public class CustomFilterWebDownLoadPdf : ICustomFilter
     {
         private readonly Uri _uriDownLoad;
-        public CustomFilter(string urlDownLoad)
+        public CustomFilterWebDownLoadPdf(string urlDownLoad)
         {
             _uriDownLoad = new Uri(urlDownLoad);
         }

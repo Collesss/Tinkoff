@@ -10,8 +10,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoMapper" Version="11.0.1" />
-    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="11.0.0" />
     <PackageReference Include="EPPlus" Version="4.5.3.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.12" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="6.0.0" />
@@ -19,10 +17,10 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0" />
-    <PackageReference Include="sautinsoft.pdffocus" Version="8.3.3.25" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\CustomFilter\CustomFilter.csproj" />
     <ProjectReference Include="..\DBTinkoff\DBTinkoff.csproj" />
     <ProjectReference Include="..\MyLogger\MyLogger.csproj" />
     <ProjectReference Include="..\MySaver\MySaver.csproj" />

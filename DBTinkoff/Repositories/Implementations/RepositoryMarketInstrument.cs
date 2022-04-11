@@ -23,7 +23,7 @@ namespace DBTinkoff.Repositories.Implementations
 
         async Task<IEnumerable<MarketInstrument>> IRepositoryMarketInstrument.GetAllAsync()
         {
-            MarketInstrumentList marketInstrumentList = await _connection.Context.MarketBondsAsync();
+            MarketInstrumentList marketInstrumentList = await _connection.Context.MarketStocksAsync();
 
             await _dBTinkoffContext.Stoks.Merge(marketInstrumentList.Instruments.Select(stock => new EntityMarketInstrument(stock)), 
                 new EntityMarketInstrumentKeyEqualityComparer(), 

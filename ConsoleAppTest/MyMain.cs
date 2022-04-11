@@ -1,11 +1,6 @@
 ﻿using ConsoleAppTest.Transform;
-using DBTinkoff;
-using DBTinkoff.Repositories;
+using CustomFilter.Interfaces;
 using DBTinkoff.Repositories.Interfaces;
-using DBTinkoffEntities.Entities;
-using DBTinkoffEntities.EqualityComparers;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MySaver;
@@ -13,17 +8,14 @@ using MySaver.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Tinkoff.Trading.OpenApi.Models;
-using Tinkoff.Trading.OpenApi.Network;
 
 namespace ConsoleAppTest
 {
     public class MyMain
     {
-        //private readonly IServiceProvider _serviceProvider;
         private readonly ISave<SaveExcelData<Data>> _save;
         private readonly ILogger<MyMain> _logger;
         private readonly ICustomFilter _customFilter;
@@ -32,7 +24,7 @@ namespace ConsoleAppTest
         private readonly IRepositoryCandlePayload _repositoryCandlePayload;
         private readonly ITransform<IEnumerable<CandlePayload>, IEnumerable<Data>> _transform;
 
-        public MyMain(/*IServiceProvider serviceProvider,*/
+        public MyMain(
             ISave<SaveExcelData<Data>> save, 
             ILogger<MyMain> logger, 
             ICustomFilter customFilter,
@@ -41,7 +33,6 @@ namespace ConsoleAppTest
             ITransform<IEnumerable<CandlePayload>, IEnumerable<Data>> transform,
             IOptions<Options> options)
         {
-            //_serviceProvider = serviceProvider;
             _save = save;
             _logger = logger;
             _customFilter = customFilter;
@@ -58,7 +49,7 @@ namespace ConsoleAppTest
             foreach (var stock in stocks)
                 _logger.LogInformation($"{stock.Name}: {stock.Figi}: {stock.Ticker};");
 
-            _logger.LogInformation(stocks.Count().ToString());
+            _logger.LogInformation($"total stokcs: {stocks.Count()}");
 
             int i = 1;
 
@@ -69,7 +60,6 @@ namespace ConsoleAppTest
                 stocks = _customFilter.Filtring(stocks).ToList();
 
             _logger.LogInformation(stocks.Count().ToString());
-            //Console.WriteLine(stocks.Count());
 
             foreach (var stock in stocks)
             {

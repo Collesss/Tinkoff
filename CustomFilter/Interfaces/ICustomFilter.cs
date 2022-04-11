@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Tinkoff.Trading.OpenApi.Models;
 
-namespace ConsoleAppTest
+namespace CustomFilter.Interfaces
 {
     public interface ICustomFilter
     {

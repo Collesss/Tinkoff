@@ -38,9 +38,9 @@ namespace DBTinkoff.Repositories.Implementations
                 .Where(dAL => dAL.Figi == figi && dAL.Interval == interval && dAL.Time > from && dAL.Time < to)
                 .Select(dAL => dAL.Time)
                 .OrderBy(time => time)
+                .ToListAsync())
                 .Prepend(from)
                 .Append(to)
-                .ToListAsync())
                 .GroupBy(time =>
                 {
                     bool incGroup = time - last < TimeSpan.FromDays(1);
@@ -48,8 +48,7 @@ namespace DBTinkoff.Repositories.Implementations
                     return incGroup ? ++group : group;
                 })
                 .Where(gr => gr.Count() > 1)
-                .Select(gr => (from: gr.Min().AddDays(1), to: gr.Max()))
-                .ToList();
+                .Select(gr => (from: gr.Min().AddDays(1), to: gr.Max()));
         }
 
         async Task IRepositoryDataAboutAlreadyLoaded.SetLoadInterval(string figi, DateTime from, DateTime to, CandleInterval interval)
