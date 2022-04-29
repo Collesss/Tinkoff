@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using Tinkoff.Trading.OpenApi.Models;
 
-namespace CustomFilter.Interfaces
+namespace Filter
 {
-    public interface ICustomFilter
+    public interface IFilter
     {
         public IEnumerable<MarketInstrument> Filtring(IEnumerable<MarketInstrument> entities);
     }

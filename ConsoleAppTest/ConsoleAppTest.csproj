@@ -20,8 +20,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CustomFilter\CustomFilter.csproj" />
     <ProjectReference Include="..\DBTinkoff\DBTinkoff.csproj" />
+    <ProjectReference Include="..\Filter.WebDownLoad\Filter.WebDownLoad.csproj" />
+    <ProjectReference Include="..\Filter\Filter.csproj" />
     <ProjectReference Include="..\MyLogger\MyLogger.csproj" />
     <ProjectReference Include="..\MySaver\MySaver.csproj" />
     <ProjectReference Include="..\TinkoffMyConnectionFactory\TinkoffMyConnectionFactory.csproj" />
@@ -29,7 +30,7 @@
 
   <ItemGroup>
     <None Update="config.json">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 

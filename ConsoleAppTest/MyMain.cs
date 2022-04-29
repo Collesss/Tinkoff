@@ -56,8 +56,7 @@ namespace ConsoleAppTest
             DateTime start = DateTime.UtcNow.Date.AddDays(-_options.Value.Days).Date;
             DateTime end = DateTime.UtcNow.Date.AddDays(1);
 
-            if (_options.Value.CustomFilter)
-                stocks = _customFilter.Filtring(stocks).ToList();
+            stocks = _customFilter.Filtring(stocks).ToList();
 
             _logger.LogInformation(stocks.Count().ToString());
 

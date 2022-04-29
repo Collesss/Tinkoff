@@ -1,22 +1,21 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using SautinSoft;
-using System.Text.RegularExpressions;
+﻿using SautinSoft;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
 using Tinkoff.Trading.OpenApi.Models;
-using CustomFilter.Interfaces;
 
-namespace CustomFilter.Implementations
+namespace Filter.WebDownLoad
 {
-    public class CustomFilterWebDownLoadPdf : ICustomFilter
+    public class FilterWebDownLoadPdf : IFilter
     {
         private readonly Uri _uriDownLoad;
-        public CustomFilterWebDownLoadPdf(string urlDownLoad)
+        public FilterWebDownLoadPdf(string urlDownLoad)
         {
             _uriDownLoad = new Uri(urlDownLoad);
         }
 
-        IEnumerable<MarketInstrument> ICustomFilter.Filtring(IEnumerable<MarketInstrument> entities)
+        IEnumerable<MarketInstrument> IFilter.Filtring(IEnumerable<MarketInstrument> entities)
         {
             //new WebClient().DownloadFile(_urlDownLoad, "file.pdf");
 

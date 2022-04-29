@@ -2,6 +2,8 @@
 using DBTinkoff;
 using DBTinkoff.Repositories.Implementations;
 using DBTinkoff.Repositories.Interfaces;
+using Filter;
+using Filter.WebDownLoad;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -86,7 +88,7 @@ namespace ConsoleAppTest
                 .AddScoped<IRepositoryCandlePayload, RepositoryCandlePayload>()
                 .AddScoped<IRepositoryDataAboutAlreadyLoaded, RepositoryDataAboutAlreadyLoaded>()
                 .AddSingleton<ITransform<IEnumerable<CandlePayload>, IEnumerable<Data>>, Transform.Transform>()
-                .AddSingleton<ICustomFilter>(sp => new CustomFilter(sp.GetRequiredService<IOptions<Options>>().Value.CustomFilterData));
+                .AddSingleton<IFilter>(sp => new FilterWebDownLoadPdf(sp.GetRequiredService<IOptions<Options>>().Value.CustomFilterData));
         }
     }
 }
