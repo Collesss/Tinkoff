@@ -1,4 +1,5 @@
-﻿using SautinSoft;
+﻿using Microsoft.Extensions.Options;
+using SautinSoft;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,9 +11,9 @@ namespace Filter.WebDownLoad
     public class FilterWebDownLoadPdf : IFilter
     {
         private readonly Uri _uriDownLoad;
-        public FilterWebDownLoadPdf(string urlDownLoad)
+        public FilterWebDownLoadPdf(IOptions<FilterWebDownLoadOptions> filterOptions)
         {
-            _uriDownLoad = new Uri(urlDownLoad);
+            _uriDownLoad = new Uri(filterOptions.Value.UrlDownLoad);
         }
 
         IEnumerable<MarketInstrument> IFilter.Filtring(IEnumerable<MarketInstrument> entities)

@@ -3,7 +3,7 @@ using DBTinkoff;
 using DBTinkoff.Repositories.Implementations;
 using DBTinkoff.Repositories.Interfaces;
 using Filter;
-using Filter.WebDownLoad;
+using ExtensionPlugins;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,6 +18,7 @@ using System.Threading;
 using Tinkoff.Trading.OpenApi.Models;
 using TinkoffMyConnectionFactory;
 using save = MySaver;
+using Filter.Union;
 
 namespace ConsoleAppTest
 {
@@ -88,7 +89,9 @@ namespace ConsoleAppTest
                 .AddScoped<IRepositoryCandlePayload, RepositoryCandlePayload>()
                 .AddScoped<IRepositoryDataAboutAlreadyLoaded, RepositoryDataAboutAlreadyLoaded>()
                 .AddSingleton<ITransform<IEnumerable<CandlePayload>, IEnumerable<Data>>, Transform.Transform>()
-                .AddSingleton<IFilter>(sp => new FilterWebDownLoadPdf(sp.GetRequiredService<IOptions<Options>>().Value.CustomFilterData));
+                .AddUsePlugin(Configuration.GetSection("Plugins:Filters"), typeof(IFilter))
+                .AddTransient<IFilter, FilterUnion>();
+                //.AddSingleton<IFilter, FilterWebDownLoadPdf>();
         }
     }
 }

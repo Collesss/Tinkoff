@@ -14,18 +14,19 @@ namespace TestProject
     public class UnitTestCuttingRequest
     {
         //private readonly Mock<IRepository<EntityCandlePayload>> _mockRepositoryEntityCandlePayload;
-        
+        /*
         private readonly IRepository<EntityCandlePayload> _repositoryCandle;
         private readonly IRepository<EntityMarketInstrument> _repositoryMarket;
         private readonly IRepository<EntityDataAboutAlreadyLoaded> _repositoryDataAboutLoaded;
         private readonly DBTinkoffContext _dBTinkoffContext;
+        */
         public UnitTestCuttingRequest()
         {
-            _dBTinkoffContext = new DBTinkoffContext(new DbContextOptionsBuilder<DBTinkoffContext>().UseSqlite("Data source=cache.db").Options);
+            //_dBTinkoffContext = new DBTinkoffContext(new DbContextOptionsBuilder<DBTinkoffContext>().UseSqlite("Data source=cache.db").Options);
 
-            _repositoryMarket = new Repository<DBTinkoffContext, EntityMarketInstrument>(_dBTinkoffContext);
-            _repositoryCandle = new Repository<DBTinkoffContext, EntityCandlePayload>(_dBTinkoffContext);
-            _repositoryDataAboutLoaded = new Repository<DBTinkoffContext, EntityDataAboutAlreadyLoaded>(_dBTinkoffContext);
+            //_repositoryMarket = new Repository<DBTinkoffContext, EntityMarketInstrument>(_dBTinkoffContext);
+            //_repositoryCandle = new Repository<DBTinkoffContext, EntityCandlePayload>(_dBTinkoffContext);
+            //_repositoryDataAboutLoaded = new Repository<DBTinkoffContext, EntityDataAboutAlreadyLoaded>(_dBTinkoffContext);
 
             /*
             _mockRepositoryEntityCandlePayload = new Mock<IRepository<EntityCandlePayload>>();
@@ -95,7 +96,7 @@ namespace TestProject
                 dateTimeLast = time;
             }
             */
-
+            /*
             int days = 100;
 
             DateTime start = DateTime.Today.AddDays(-days).Date;
@@ -122,7 +123,7 @@ namespace TestProject
                     rangesQueries.Add((start: dateTimeLast.AddDays(1), end: time));
                 dateTimeLast = time;
             }
-
+            */
             Assert.True(true, "OK");
         }
     }

@@ -21,7 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DBTinkoff\DBTinkoff.csproj" />
-    <ProjectReference Include="..\Filter.WebDownLoad\Filter.WebDownLoad.csproj" />
+    <ProjectReference Include="..\ExtensionPlugins\ExtensionPlugins.csproj" />
     <ProjectReference Include="..\Filter\Filter.csproj" />
     <ProjectReference Include="..\MyLogger\MyLogger.csproj" />
     <ProjectReference Include="..\MySaver\MySaver.csproj" />

@@ -1,6 +1,6 @@
 ﻿using ConsoleAppTest.Transform;
-using CustomFilter.Interfaces;
 using DBTinkoff.Repositories.Interfaces;
+using Filter;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MySaver;
@@ -18,7 +18,7 @@ namespace ConsoleAppTest
     {
         private readonly ISave<SaveExcelData<Data>> _save;
         private readonly ILogger<MyMain> _logger;
-        private readonly ICustomFilter _customFilter;
+        private readonly IFilter _customFilter;
         private readonly IOptions<Options> _options;
         private readonly IRepositoryMarketInstrument _repositoryMarketInstrument;
         private readonly IRepositoryCandlePayload _repositoryCandlePayload;
@@ -27,7 +27,7 @@ namespace ConsoleAppTest
         public MyMain(
             ISave<SaveExcelData<Data>> save, 
             ILogger<MyMain> logger, 
-            ICustomFilter customFilter,
+            IFilter customFilter,
             IRepositoryMarketInstrument repositoryMarketInstrument,
             IRepositoryCandlePayload repositoryCandlePayload,
             ITransform<IEnumerable<CandlePayload>, IEnumerable<Data>> transform,

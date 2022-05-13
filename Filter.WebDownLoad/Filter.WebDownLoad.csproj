@@ -2,14 +2,34 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <Configurations>Debug;Release;Realease.Without_pdb;Realease.Without_pdb_in_PluginsCatalog</Configurations>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Realease.Without_pdb|AnyCPU'">
+    <Optimize>true</Optimize>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <OutputPath></OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Realease.Without_pdb_in_PluginsCatalog|AnyCPU'">
+    <Optimize>true</Optimize>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <OutputPath>C:\Users\Сергей\Desktop\Tinkoff\ConsoleAppTest\bin\Debug\netcoreapp3.1\Plugins\Filters\FilterWebDownLoad\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
     <PackageReference Include="sautinsoft.pdffocus" Version="8.3.4.19" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Filter\Filter.csproj" />
+    <ProjectReference Include="..\Filter\Filter.csproj">
+      <Private>false</Private>
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </ProjectReference>
   </ItemGroup>
 
 </Project>
