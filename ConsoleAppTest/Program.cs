@@ -38,12 +38,15 @@ namespace ConsoleAppTest
             ConfigureServices(serviceCollection);
             Services = serviceCollection.BuildServiceProvider();
 
+            
             using (IServiceScope scope = Services.CreateScope())
             {
                 CancellationTokenSource cancelTokenSource = new CancellationTokenSource();
 
                 scope.ServiceProvider.GetRequiredService<MyMain>().Main(cancelTokenSource.Token).Wait();
             }
+            
+
 
             /*
             if (Console.KeyAvailable)
@@ -89,9 +92,11 @@ namespace ConsoleAppTest
                 .AddScoped<IRepositoryCandlePayload, RepositoryCandlePayload>()
                 .AddScoped<IRepositoryDataAboutAlreadyLoaded, RepositoryDataAboutAlreadyLoaded>()
                 .AddSingleton<ITransform<IEnumerable<CandlePayload>, IEnumerable<Data>>, Transform.Transform>()
-                .AddUsePlugin(Configuration.GetSection("Plugins:Filters"), typeof(IFilter))
-                .AddTransient<IFilter, FilterUnion>();
+                .AddSingleton<IFilter, FilterUnion>()
+                .AddUsePlugin(Configuration.GetSection("Plugins:Filters"), typeof(IFilter));
                 //.AddSingleton<IFilter, FilterWebDownLoadPdf>();
+
+
         }
     }
 }

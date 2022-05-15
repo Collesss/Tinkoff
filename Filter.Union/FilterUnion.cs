@@ -10,18 +10,14 @@ namespace Filter.Union
 {
     public class FilterUnion : IFilter
     {
-        private readonly IUnionNamedDependency<IFilter> _namedDependency;
-        private readonly FilterUnionOptions _options;
+        private readonly IEnumerable<IFilter> _filters;
 
-        public FilterUnion(IUnionNamedDependency<IFilter> namedDependency, IOptions<FilterUnionOptions> options)
+        public FilterUnion(IEnumerable<INamedDependency<IFilter>> filters)
         {
-            _namedDependency = namedDependency;
-            _options = options.Value;
+            _filters = filters.Select(namedDep => namedDep.Dependency);
         }
 
         IEnumerable<MarketInstrument> IFilter.Filtring(IEnumerable<MarketInstrument> entities) =>
-            _options.UsingFilter
-                .Select(name => _namedDependency.Get(name))
-                .Aggregate(entities, (ent, filter) => filter.Filtring(ent));
+            _filters.Aggregate(entities, (ent, filter) => filter.Filtring(ent));
     }
 }
