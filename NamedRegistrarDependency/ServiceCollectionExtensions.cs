@@ -25,9 +25,9 @@ namespace NamedRegistrarDependency
         {
             Type typeGenericINamedDepency = typeof(INamedDependency<>).MakeGenericType(baseType);
             Type typeGenericNamedDepency = typeof(NamedDependency<>).MakeGenericType(baseType);
-
+            //sc.AddOptions<Type>()
             sc.Add(new ServiceDescriptor(realization, realization, lifetime));
-
+            
             sc.Add(new ServiceDescriptor(typeGenericINamedDepency, sp =>
                 typeGenericNamedDepency.GetConstructor(new Type[] { typeof(string), baseType })
                 .Invoke(new object[] { name, sp.GetRequiredService(realization) }), ServiceLifetime.Transient));
