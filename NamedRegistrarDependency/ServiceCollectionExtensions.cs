@@ -9,7 +9,8 @@ namespace NamedRegistrarDependency
     {
         public static IServiceCollection AddNamedDependency<T, V>(this IServiceCollection sc, string name, ServiceLifetime lifetime) where V : T
         {
-            sc.Add(new ServiceDescriptor(typeof(INamedDependency<T>), sp => new NamedDependency<T>(name, sp.GetRequiredService<V>()), ServiceLifetime.Transient));
+            -------------------------------------
+            //sc.Add(new ServiceDescriptor(typeof(INamedDependency<T>), sp => new NamedDependency<T>(name, sp.GetRequiredService<V>()), ServiceLifetime.Transient));
 
             sc.Add(new ServiceDescriptor(typeof(V), typeof(V), lifetime));
 
@@ -23,6 +24,11 @@ namespace NamedRegistrarDependency
 
         public static IServiceCollection AddNamedDependency(this IServiceCollection sc, Type baseType, Type realization, string name, ServiceLifetime lifetime)
         {
+            return typeof(ServiceCollection)
+                .GetMethod("AddNamedDependency", 2, new Type[] { typeof(IServiceCollection), typeof(string), typeof(ServiceLifetime) })
+                .MakeGenericMethod(baseType, realization)
+                .Invoke(null, new object[] { sc, name, lifetime }) as IServiceCollection;
+            /*
             Type typeGenericINamedDepency = typeof(INamedDependency<>).MakeGenericType(baseType);
             Type typeGenericNamedDepency = typeof(NamedDependency<>).MakeGenericType(baseType);
             //sc.AddOptions<Type>()
@@ -41,6 +47,7 @@ namespace NamedRegistrarDependency
                 sc.Add(unionNamedDepency);
 
             return sc;
+            */
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.Extensions.Options;
 
 namespace NamedRegistrarDependency
 {
@@ -13,9 +14,9 @@ namespace NamedRegistrarDependency
         private readonly string _name;
         private readonly T _dependency;
 
-        public NamedDependency(string name, T dependency)
+        public NamedDependency(IOptions<OptionNamedType<T>> optionNamedType, T dependency)
         {
-            _name = name;
+            _name = optionNamedType.Value.name;
             _dependency = dependency;
         }
     }
