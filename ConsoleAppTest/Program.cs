@@ -92,10 +92,8 @@ namespace ConsoleAppTest
                 .AddScoped<IRepositoryCandlePayload, RepositoryCandlePayload>()
                 .AddScoped<IRepositoryDataAboutAlreadyLoaded, RepositoryDataAboutAlreadyLoaded>()
                 .AddSingleton<ITransform<IEnumerable<CandlePayload>, IEnumerable<Data>>, Transform.Transform>()
-                .AddSingleton<IFilter, FilterUnion>()
-                .AddUsePlugin(Configuration.GetSection("Plugins:Filters"), typeof(IFilter));
-                //.AddSingleton<IFilter, FilterWebDownLoadPdf>();
-
+                .AddSingleton<IFilterUnion, FilterUnion>()
+                .AddUsePlugin<IFilter>(Configuration.GetSection("Plugins:Filters").Get<OptionsPlugins>());
 
         }
     }

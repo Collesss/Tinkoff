@@ -14,38 +14,27 @@ namespace ExtensionPlugins
 {
     public static class ServiceCollectionExtension
     {
-        public static IServiceCollection AddUsePlugin(this IServiceCollection serviceCollection, IConfiguration configuration, Type baseType)
+        public static IServiceCollection AddUsePlugin<T>(this IServiceCollection serviceCollection, OptionsPlugins configuration)
         {
-            string pathLoad = configuration["PathLoad"];
-
-            foreach (var loadAssemblyInfo in configuration.GetSection("Assemblies").GetChildren())
+            foreach (var loadAssemblyInfo in configuration.Assemblies)
             {
-                string fullPathToAssembly = Path.GetFullPath(Path.Combine(pathLoad, loadAssemblyInfo["PathToAssembly"]));
+                string fullPathToAssembly = Path.GetFullPath(Path.Combine(configuration.PathLoad, loadAssemblyInfo.PathToAssembly));
                 PluginLoadContext pluginLoadContext = new PluginLoadContext(fullPathToAssembly);
 
                 Assembly loadingAssembly = pluginLoadContext.LoadFromAssemblyPath(fullPathToAssembly);
 
-                var realizations = loadAssemblyInfo.GetSection("UsingClassesFilters").GetChildren()
-                    .Select(typeName => loadingAssembly.GetType(typeName.Value, true));
-
-                foreach (var optionInfo in loadAssemblyInfo.GetSection("UsingClassesOptions").GetChildren())
+                foreach (var optionInfo in loadAssemblyInfo.Options)
                 {
-                    var optionType = loadingAssembly.GetType(optionInfo["OptionClass"], true);
-                    var optionData = optionInfo.GetSection("Data");
+                    var optionType = loadingAssembly.GetType(optionInfo.Type, true);
 
-                    //serviceCollection
-
-                    typeof(OptionsConfigurationServiceCollectionExtensions)
-                        .GetMethod("Configure", 1, new Type[] { typeof(IServiceCollection), typeof(IConfiguration) })
-                        .MakeGenericMethod(optionType)
-                        .Invoke(null, new object[] { serviceCollection, optionData });
-                    
+                    serviceCollection.Configure(optionType, optionInfo.Data);
                 }
 
-                foreach (Type realization in realizations)
+                foreach (var implementation in loadAssemblyInfo.Classes)
                 {
+                    Type implementationType = loadingAssembly.GetType(implementation, true);
                     //filterUnionOptions.UsingFilter.Add(realization.AssemblyQualifiedName);
-                    serviceCollection.AddNamedDependency(baseType, realization, realization.AssemblyQualifiedName, ServiceLifetime.Transient);
+                    serviceCollection.AddNamedDependency(typeof(T), implementationType, implementationType.AssemblyQualifiedName, ServiceLifetime.Transient);
                     //serviceCollection.AddTransient(baseType, realization);
                 }
             }
@@ -56,5 +45,17 @@ namespace ExtensionPlugins
 
             return serviceCollection;
         }
+
+        public static IServiceCollection AddUsePlugin(this IServiceCollection serviceCollection, OptionsPlugins configuration, Type baseType) =>
+            typeof(ServiceCollectionExtension)
+                .GetMethod("AddUsePlugin", 1, new Type[] { typeof(IServiceCollection), typeof(OptionsPlugins) })
+                .MakeGenericMethod(baseType)
+                .Invoke(null, new object[] { serviceCollection, configuration }) as IServiceCollection;
+
+        private static IServiceCollection Configure(this IServiceCollection serviceCollection, Type configureType, IConfiguration configuration) =>
+            typeof(OptionsConfigurationServiceCollectionExtensions)
+                        .GetMethod("Configure", 1, new Type[] { typeof(IServiceCollection), typeof(IConfiguration) })
+                        .MakeGenericMethod(configureType)
+                        .Invoke(null, new object[] { serviceCollection, configuration }) as IServiceCollection;
     }
 }

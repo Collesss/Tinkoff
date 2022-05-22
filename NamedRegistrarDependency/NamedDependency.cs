@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 
 namespace NamedRegistrarDependency
 {
-    public class NamedDependency<T> : INamedDependency<T>
+    public class NamedDependency<T, V> : INamedDependency<T> where V: T
     {
         string INamedDependency<T>.Name => _name;
 
@@ -14,7 +14,7 @@ namespace NamedRegistrarDependency
         private readonly string _name;
         private readonly T _dependency;
 
-        public NamedDependency(IOptions<OptionNamedType<T>> optionNamedType, T dependency)
+        public NamedDependency(IOptions<OptionNamedType<V>> optionNamedType, V dependency)
         {
             _name = optionNamedType.Value.name;
             _dependency = dependency;

@@ -9,10 +9,14 @@ namespace NamedRegistrarDependency
     {
         public static IServiceCollection AddNamedDependency<T, V>(this IServiceCollection sc, string name, ServiceLifetime lifetime) where V : T
         {
-            -------------------------------------
+            //-------------------------------------
             //sc.Add(new ServiceDescriptor(typeof(INamedDependency<T>), sp => new NamedDependency<T>(name, sp.GetRequiredService<V>()), ServiceLifetime.Transient));
 
+            sc.Configure<OptionNamedType<V>>(opt => opt.name = name);
+
             sc.Add(new ServiceDescriptor(typeof(V), typeof(V), lifetime));
+
+            sc.AddTransient<INamedDependency<T>, NamedDependency<T, V>>();
 
             ServiceDescriptor unionNamedDepency = new ServiceDescriptor(typeof(IUnionNamedDependency<T>), typeof(UnionNamedDependency<T>), ServiceLifetime.Transient);
 
@@ -24,7 +28,7 @@ namespace NamedRegistrarDependency
 
         public static IServiceCollection AddNamedDependency(this IServiceCollection sc, Type baseType, Type realization, string name, ServiceLifetime lifetime)
         {
-            return typeof(ServiceCollection)
+            return typeof(ServiceCollectionExtensions)
                 .GetMethod("AddNamedDependency", 2, new Type[] { typeof(IServiceCollection), typeof(string), typeof(ServiceLifetime) })
                 .MakeGenericMethod(baseType, realization)
                 .Invoke(null, new object[] { sc, name, lifetime }) as IServiceCollection;
