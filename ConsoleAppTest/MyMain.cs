@@ -1,11 +1,7 @@
-﻿using ConsoleAppTest.Transform;
-using DBTinkoff.Repositories.Interfaces;
-using Filter;
-using Filter.Union;
+﻿using DBTinkoff.Repositories.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using MySaver;
-using MySaver.Models;
+using Save;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,30 +13,24 @@ namespace ConsoleAppTest
 {
     public class MyMain
     {
-        private readonly ISave<SaveExcelData<Data>> _save;
+        private readonly ISaveCandleMarketInstrument _save;
         private readonly ILogger<MyMain> _logger;
-        private readonly IFilterUnion _customFilter;
         private readonly IOptions<Options> _options;
         private readonly IRepositoryMarketInstrument _repositoryMarketInstrument;
         private readonly IRepositoryCandlePayload _repositoryCandlePayload;
-        private readonly ITransform<IEnumerable<CandlePayload>, IEnumerable<Data>> _transform;
 
         public MyMain(
-            ISave<SaveExcelData<Data>> save, 
+            ISaveCandleMarketInstrument save, 
             ILogger<MyMain> logger,
-            IFilterUnion customFilter,
             IRepositoryMarketInstrument repositoryMarketInstrument,
             IRepositoryCandlePayload repositoryCandlePayload,
-            ITransform<IEnumerable<CandlePayload>, IEnumerable<Data>> transform,
             IOptions<Options> options)
         {
             _save = save;
             _logger = logger;
-            _customFilter = customFilter;
             _repositoryMarketInstrument = repositoryMarketInstrument;
             _repositoryCandlePayload = repositoryCandlePayload;
             _options = options;
-            _transform = transform;
         }
 
         public async Task Main(CancellationToken cancellationToken)
@@ -57,8 +47,6 @@ namespace ConsoleAppTest
             DateTime start = DateTime.UtcNow.Date.AddDays(-_options.Value.Days).Date;
             DateTime end = DateTime.UtcNow.Date.AddDays(1);
 
-            stocks = _customFilter.Filtring(stocks).ToList();
-
             _logger.LogInformation(stocks.Count().ToString());
 
             foreach (var stock in stocks)
@@ -66,9 +54,9 @@ namespace ConsoleAppTest
                 if (cancellationToken.IsCancellationRequested)
                     break;
 
-                var candles = _transform.Transform(await _repositoryCandlePayload.MarketCandleAsync(stock.Figi, start, end, CandleInterval.Hour));
+                var candels = await _repositoryCandlePayload.MarketCandleAsync(stock.Figi, start, end, CandleInterval.Hour);
 
-                await _save.Save(new SaveExcelData<Data>(stock.Name, "Data", candles));
+                await _save.Save(new DataSaveCandleMarketInstrument(stock, candels));
 
                 _logger.LogInformation($"Figi:{stock.Figi} Name:{stock.Name}; {i}/{stocks.Count()}");
 

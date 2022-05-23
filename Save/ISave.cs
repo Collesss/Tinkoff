@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MySaver
+namespace Save
 {
     public interface ISave<T>
     {
-        Task Save(T dataForSave);
+        public Task Save(T data);
     }
 }
