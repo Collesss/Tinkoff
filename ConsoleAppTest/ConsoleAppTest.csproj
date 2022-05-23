@@ -24,7 +24,8 @@
     <ProjectReference Include="..\ExtensionPlugins\ExtensionPlugins.csproj" />
     <ProjectReference Include="..\Filter\Filter.csproj" />
     <ProjectReference Include="..\MyLogger\MyLogger.csproj" />
-    <ProjectReference Include="..\MySaver\MySaver.csproj" />
+    <ProjectReference Include="..\Save.SaveExcel\Save.SaveExcel.csproj" />
+    <ProjectReference Include="..\Save\Save.csproj" />
     <ProjectReference Include="..\TinkoffMyConnectionFactory\TinkoffMyConnectionFactory.csproj" />
   </ItemGroup>
 
