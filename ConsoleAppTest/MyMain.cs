@@ -3,22 +3,18 @@ using DBTinkoff.Repositories;
 using DBTinkoffEntities.Entities;
 using DBTinkoffEntities.EqualityComparers;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MySaver;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Tinkoff.Trading.OpenApi.Models;
 using Tinkoff.Trading.OpenApi.Network;
-using TinkoffMyConnectionFactory;
 
 namespace ConsoleAppTest
 {
@@ -78,7 +74,8 @@ namespace ConsoleAppTest
 
             int i = 1;
 
-            DateTime start = DateTime.UtcNow.Date.AddDays(-_options.Value.Days).Date;
+            DateTime start = (DateTime.UtcNow.Date-_options.Value.TimeSpan).Date;
+            DateTime startSave = DateTime.UtcNow-_options.Value.TimeSpan;
             DateTime end = DateTime.UtcNow.Date.AddDays(1);
 
             if (_options.Value.CustomFilter)
@@ -130,11 +127,21 @@ namespace ConsoleAppTest
                     dateTimeLast = utcTime;
                 }
 
-                
-                IEnumerable<EntityCandlePayload> entityCandlePayloads = rangesQueries
-                    .SelectMany(range => context.MarketCandlesAsync(stock.Figi, range.start, range.end, CandleInterval.Hour).Result.Candles)
-                    .Select(candle => new EntityCandlePayload(candle))
-                    .ToList();
+                IEnumerable<EntityCandlePayload> entityCandlePayloads = null;
+
+                try
+                {
+                    entityCandlePayloads = rangesQueries
+                        .SelectMany(range => context.MarketCandlesAsync(stock.Figi, range.start, range.end, CandleInterval.Hour).Result.Candles)
+                        .Select(candle => new EntityCandlePayload(candle))
+                        .ToList();
+                }
+                catch(Exception e)
+                {
+                    _logger.LogError(e, $"Error load information. {stock.Name} - {stock.Figi}.");
+                    i++;
+                    continue;
+                }
 
                 using (IServiceScope scope = _serviceProvider.CreateScope())
                 {
@@ -157,19 +164,44 @@ namespace ConsoleAppTest
                     await repositoryCandle.UpdateAsync(UpdateCandle);
 
                     await scope.ServiceProvider.GetRequiredService<IRepository<EntityDataAboutAlreadyLoaded>>()
-                        .CreateAsync(Enumerable.Range(0, _options.Value.Days)
+                        .CreateAsync(Enumerable.Range(0, _options.Value.TimeSpan.Days)
                         .Select(i => new EntityDataAboutAlreadyLoaded(stock.Figi, start.AddDays(i).Date, CandleInterval.Hour))
                         .Except(stock.DataAboutLoadeds, new CommonEqualityComparer<EntityDataAboutAlreadyLoaded>()));
 
                     await scope.ServiceProvider.GetRequiredService<DBTinkoffContext>().Attach(stock).Collection(st => st.Candles).LoadAsync();
                 }
-                
-                
-                var candles = stock.Candles
-                    .Where(candle => candle.Time > start)
+
+
+                IEnumerable<Data> candles = null;
+
+
+                Dictionary<CandleInterval, int> timeIntervals = new Dictionary<CandleInterval, int>
+                {
+                    [CandleInterval.Minute] = 1,
+                    [CandleInterval.TwoMinutes] = 2,
+                    [CandleInterval.ThreeMinutes] = 3,
+                    [CandleInterval.FiveMinutes] = 5,
+                    [CandleInterval.TenMinutes] = 10,
+                    [CandleInterval.QuarterHour] = 15,
+                    [CandleInterval.HalfHour] = 30,
+                    [CandleInterval.Hour] = 60,
+                    [CandleInterval.Day] = 1440,
+                    [CandleInterval.Week] = 10080,
+                    [CandleInterval.Month] = 43200
+                };
+
+
+                if (_options.Value.UseCustomSave)
+                    candles = stock.Candles
+                    .Where(candle => candle.Time >= startSave)
                     .GroupBy(el => $"{el.Time.Year}|{el.Time.Month}|{el.Time.Day}|{(el.Time.Hour + 1) / 4}")
                     .Select(group => Data.AgregateCandle(group))
                     .OrderBy(aggCandle => aggCandle.OpenTime);
+                else
+                    candles = stock.Candles
+                        .Where(candle => candle.Time >= startSave)
+                        .Select(candle => new Data(candle.Time, candle.Time + TimeSpan.FromMinutes(timeIntervals[candle.Interval]), candle.Open, candle.Close, candle.Low, candle.High, candle.Volume))
+                        .OrderBy(dataCandle => dataCandle.OpenTime);
 
                 await _save.Save(($"{regex.Replace(stock.Name, match => "_")}.xlsx", "Data"), candles, new (Func<Data, object> element, string header, string format)[]
                 {

@@ -68,6 +68,12 @@ namespace TinkoffMyConnectionFactory
                     }
                     catch (OpenApiException e)
                     {
+                        if(e.HttpStatusCode == System.Net.HttpStatusCode.InternalServerError)
+                        {
+                            _logger.LogError(e, $"INTERNAL SERVER ERROR CONTORA PIDORASOV DETECTED: {e.Message}");
+                            throw;
+                        }
+
                         _logger.LogError(e, $"not very fock: {e.Message}");
                         await Task.Delay(TimeSpan.FromMinutes(1));
                     }

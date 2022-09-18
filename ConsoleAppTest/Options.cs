@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using Tinkoff.Trading.OpenApi.Models;
 
 namespace ConsoleAppTest
 {
@@ -8,7 +7,8 @@ namespace ConsoleAppTest
     {
         public string Token { get; set; }
         public string LogFile { get; set; }
-        public int Days { get; set; }
+        public TimeSpan TimeSpan { get; set; }
+        public bool UseCustomSave { get; set; }
         public bool CustomFilter { get; set; }
         public string CustomFilterData { get; set; }
     }

@@ -1,0 +1,13 @@
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Data Source=cache.db"
+  },
+  "Options": {
+    "Token": "",
+    "LogFile": "log.txt",
+    "TimeSpan": "1.04:00:00",
+    "UseCustomSave": false,
+    "CustomFilter": false,
+    "CustomFilterData": "https://295628.selcdn.ru/static/broker/margin-lending/list-western-markets.pdf"
+  }
+}
