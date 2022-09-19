@@ -189,17 +189,18 @@ namespace ConsoleAppTest
                     [CandleInterval.Week] = 10080,
                     [CandleInterval.Month] = 43200
                 };
+                
 
 
                 if (_options.Value.UseCustomSave)
                     candles = stock.Candles
-                    .Where(candle => candle.Time >= startSave)
+                    .Where(candle => candle.Time >= startSave && (!_options.Value.SkipSaturdaySunday || (candle.Time.DayOfWeek != DayOfWeek.Saturday && candle.Time.DayOfWeek != DayOfWeek.Sunday)))
                     .GroupBy(el => $"{el.Time.Year}|{el.Time.Month}|{el.Time.Day}|{(el.Time.Hour + 1) / 4}")
                     .Select(group => Data.AgregateCandle(group))
                     .OrderBy(aggCandle => aggCandle.OpenTime);
                 else
                     candles = stock.Candles
-                        .Where(candle => candle.Time >= startSave)
+                        .Where(candle => candle.Time >= startSave && (!_options.Value.SkipSaturdaySunday || (candle.Time.DayOfWeek != DayOfWeek.Saturday && candle.Time.DayOfWeek != DayOfWeek.Sunday)))
                         .Select(candle => new Data(candle.Time, candle.Time + TimeSpan.FromMinutes(timeIntervals[candle.Interval]), candle.Open, candle.Close, candle.Low, candle.High, candle.Volume))
                         .OrderBy(dataCandle => dataCandle.OpenTime);
 
